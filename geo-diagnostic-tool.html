@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GEO诊断工具 - LEAP AI搜索可见度测试</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            line-height: 1.6;
+            color: #2d3748;
+            background: #f7fafc;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 40px;
+            text-align: center;
+            border-radius: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 42px;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            font-size: 20px;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .progress-bar {
+            background: rgba(255,255,255,0.2);
+            height: 8px;
+            border-radius: 4px;
+            margin: 30px auto 0;
+            max-width: 500px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            background: white;
+            height: 100%;
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .step-container {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+            min-height: 500px;
+        }
+        
+        .step-header {
+            margin-bottom: 30px;
+        }
+        
+        .step-header h2 {
+            font-size: 32px;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+        
+        .step-header p {
+            font-size: 18px;
+            color: #718096;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #4a5568;
+            font-size: 16px;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .checkbox-item:hover {
+            background: #e6f2ff;
+            border-color: #667eea;
+        }
+        
+        .checkbox-item input[type="checkbox"] {
+            width: auto;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        
+        .checkbox-item label {
+            margin-bottom: 0;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 20px;
+            margin-top: 40px;
+            justify-content: space-between;
+        }
+        
+        .btn {
+            padding: 12px 40px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+        
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .question-list {
+            display: grid;
+            gap: 15px;
+        }
+        
+        .question-item {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+        
+        .question-item:hover {
+            border-color: #667eea;
+        }
+        
+        .question-item input {
+            margin-bottom: 10px;
+        }
+        
+        .add-question-btn {
+            background: #48bb78;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .add-question-btn:hover {
+            background: #38a169;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 60px;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            border: 5px solid #e2e8f0;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #718096;
+        }
+        
+        .result-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .score-display {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .score-circle {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .score-circle svg {
+            transform: rotate(-90deg);
+        }
+        
+        .score-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        
+        .score-number {
+            font-size: 48px;
+            font-weight: bold;
+            color: #2d3748;
+        }
+        
+        .score-label {
+            font-size: 16px;
+            color: #718096;
+        }
+        
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .metric-card {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        
+        .metric-label {
+            font-size: 14px;
+            color: #718096;
+        }
+        
+        .recommendation-list {
+            margin-top: 20px;
+        }
+        
+        .recommendation-item {
+            padding: 20px;
+            background: #f7fafc;
+            border-left: 4px solid #667eea;
+            margin-bottom: 15px;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .recommendation-item h4 {
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+        
+        .recommendation-item p {
+            color: #718096;
+        }
+        
+        .priority-high {
+            border-left-color: #f56565;
+        }
+        
+        .priority-medium {
+            border-left-color: #ed8936;
+        }
+        
+        .priority-low {
+            border-left-color: #48bb78;
+        }
+        
+        .cta-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 16px;
+            text-align: center;
+            margin-top: 40px;
+        }
+        
+        .cta-section h3 {
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+        
+        .cta-section p {
+            font-size: 18px;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        
+        .cta-btn {
+            background: white;
+            color: #667eea;
+            padding: 15px 40px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        
+        .cta-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .step {
+            display: none;
+        }
+        
+        .step.active {
+            display: block;
+        }
+        
+        .helper-text {
+            font-size: 14px;
+            color: #718096;
+            margin-top: 5px;
+        }
+        
+        .tag {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+        
+        .tag-red {
+            background: #feb2b2;
+            color: #c53030;
+        }
+        
+        .tag-yellow {
+            background: #faf089;
+            color: #744210;
+        }
+        
+        .tag-green {
+            background: #9ae6b4;
+            color: #276749;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 32px;
+            }
+            
+            .step-container {
+                padding: 30px 20px;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>GEO诊断工具</h1>
+            <p>3分钟测试，了解您的品牌在AI搜索中的表现</p>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+        </div>
+
+        <!-- Step 1: 基本信息 -->
+        <div class="step active" id="step1">
+            <div class="step-container">
+                <div class="step-header">
+                    <h2>第一步：基本信息</h2>
+                    <p>请提供您的品牌和行业信息，以便我们进行精准诊断</p>
+                </div>
+                
+                <form id="basicInfoForm">
+                    <div class="form-group">
+                        <label for="brandName">品牌名称 *</label>
+                        <input type="text" id="brandName" name="brandName" required placeholder="例如：LEAP">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="industry">所属行业 *</label>
+                        <select id="industry" name="industry" required>
+                            <option value="">请选择行业</option>
+                            <option value="ecommerce">电商零售</option>
+                            <option value="tech">科技/软件</option>
+                            <option value="beauty">美妆个护</option>
+                            <option value="education">教育培训</option>
+                            <option value="finance">金融服务</option>
+                            <option value="healthcare">医疗健康</option>
+                            <option value="real-estate">房地产</option>
+                            <option value="travel">旅游出行</option>
+                            <option value="food">食品饮料</option>
+                            <option value="b2b">B2B服务</option>
+                            <option value="other">其他</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="website">品牌官网</label>
+                        <input type="url" id="website" name="website" placeholder="https://www.example.com">
+                        <p class="helper-text">选填，用于更准确的诊断</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="competitors">主要竞争对手</label>
+                        <textarea id="competitors" name="competitors" placeholder="请列出2-3个主要竞争对手品牌，用逗号分隔"></textarea>
+                        <p class="helper-text">了解竞争对手有助于对比分析</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>目前使用的AI搜索平台</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="chatgpt" name="aiPlatforms" value="chatgpt">
+                                <label for="chatgpt">ChatGPT</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="perplexity" name="aiPlatforms" value="perplexity">
+                                <label for="perplexity">Perplexity</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="gemini" name="aiPlatforms" value="gemini">
+                                <label for="gemini">Google Gemini</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="claude" name="aiPlatforms" value="claude">
+                                <label for="claude">Claude</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="bing" name="aiPlatforms" value="bing">
+                                <label for="bing">Bing Chat</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="none" name="aiPlatforms" value="none">
+                                <label for="none">暂未使用</label>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                
+                <div class="btn-group">
+                    <span></span>
+                    <button class="btn btn-primary" onclick="nextStep(1)">下一步</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: 关键问题设置 -->
+        <div class="step" id="step2">
+            <div class="step-container">
+                <div class="step-header">
+                    <h2>第二步：关键问题设置</h2>
+                    <p>设置用户可能在AI搜索中提出的关键问题</p>
+                </div>
+                
+                <div class="question-list" id="questionList">
+                    <div class="question-item">
+                        <label>问题 1</label>
+                        <input type="text" class="question-input" placeholder="例如：最好的智能家居品牌推荐">
+                    </div>
+                    <div class="question-item">
+                        <label>问题 2</label>
+                        <input type="text" class="question-input" placeholder="例如：如何选择智能音箱？">
+                    </div>
+                    <div class="question-item">
+                        <label>问题 3</label>
+                        <input type="text" class="question-input" placeholder="例如：智能家居系统对比评测">
+                    </div>
+                </div>
+                
+                <button class="add-question-btn" onclick="addQuestion()">+ 添加更多问题</button>
+                
+                <p class="helper-text" style="margin-top: 20px;">
+                    💡 提示：请输入目标用户最可能提出的问题，这些问题应该与您的产品或服务直接相关
+                </p>
+                
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="previousStep(2)">上一步</button>
+                    <button class="btn btn-primary" onclick="nextStep(2)">下一步</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: 内容现状评估 -->
+        <div class="step" id="step3">
+            <div class="step-container">
+                <div class="step-header">
+                    <h2>第三步：内容现状评估</h2>
+                    <p>评估您当前的内容资产和优化状况</p>
+                </div>
+                
+                <form id="contentAssessmentForm">
+                    <div class="form-group">
+                        <label>您是否有完整的FAQ页面？</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="radio" id="faq-yes" name="hasFAQ" value="yes">
+                                <label for="faq-yes">是，有完整的FAQ</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="radio" id="faq-partial" name="hasFAQ" value="partial">
+                                <label for="faq-partial">有，但不够完整</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="radio" id="faq-no" name="hasFAQ" value="no">
+                                <label for="faq-no">没有FAQ页面</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>您的内容更新频率如何？</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="radio" id="update-daily" name="updateFrequency" value="daily">
+                                <label for="update-daily">每天更新</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="radio" id="update-weekly" name="updateFrequency" value="weekly">
+                                <label for="update-weekly">每周更新</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="radio" id="update-monthly" name="updateFrequency" value="monthly">
+                                <label for="update-monthly">每月更新</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="radio" id="update-rarely" name="updateFrequency" value="rarely">
+                                <label for="update-rarely">很少更新</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>您拥有哪些类型的内容资产？（多选）</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="content-blog" name="contentTypes" value="blog">
+                                <label for="content-blog">博客文章</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="content-video" name="contentTypes" value="video">
+                                <label for="content-video">视频内容</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="content-guide" name="contentTypes" value="guide">
+                                <label for="content-guide">使用指南</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="content-case" name="contentTypes" value="case">
+                                <label for="content-case">客户案例</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="content-whitepaper" name="contentTypes" value="whitepaper">
+                                <label for="content-whitepaper">白皮书/报告</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="content-comparison" name="contentTypes" value="comparison">
+                                <label for="content-comparison">产品对比</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>是否使用结构化数据（Schema标记）？</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="radio" id="schema-yes" name="hasSchema" value="yes">
+                                <label for="schema-yes">是的，已实施</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="radio" id="schema-partial" name="hasSchema" value="partial">
+                                <label for="schema-partial">部分使用</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="radio" id="schema-no" name="hasSchema" value="no">
+                                <label for="schema-no">未使用</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="radio" id="schema-unknown" name="hasSchema" value="unknown">
+                                <label for="schema-unknown">不清楚</label>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="previousStep(3)">上一步</button>
+                    <button class="btn btn-primary" onclick="startDiagnosis()">开始诊断</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 4: 诊断中 -->
+        <div class="step" id="step4">
+            <div class="step-container">
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p class="loading-text" id="loadingText">正在分析您的品牌AI搜索表现...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 5: 诊断结果 -->
+        <div class="step" id="step5">
+            <div class="step-container">
+                <div class="step-header">
+                    <h2>诊断报告</h2>
+                    <p>基于AI搜索模拟测试的综合评估结果</p>
+                </div>
+                
+                <!-- 总体得分 -->
+                <div class="result-card">
+                    <h3>AI搜索可见度得分</h3>
+                    <div class="score-display">
+                        <div class="score-circle">
+                            <svg width="200" height="200">
+                                <circle cx="100" cy="100" r="90" fill="none" stroke="#e2e8f0" stroke-width="20"/>
+                                <circle id="scoreCircle" cx="100" cy="100" r="90" fill="none" stroke="#667eea" stroke-width="20" 
+                                        stroke-dasharray="565" stroke-dashoffset="565" stroke-linecap="round"/>
+                            </svg>
+                            <div class="score-text">
+                                <div class="score-number" id="scoreNumber">0</div>
+                                <div class="score-label">综合得分</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-grid">
+                        <div class="metric-card">
+                            <div class="metric-value" id="mentionRate">0%</div>
+                            <div class="metric-label">AI提及率</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="shareOfVoice">0%</div>
+                            <div class="metric-label">品牌声量份额</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="contentScore">0/100</div>
+                            <div class="metric-label">内容完整度</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="techScore">0/100</div>
+                            <div class="metric-label">技术优化度</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 详细分析 -->
+                <div class="result-card">
+                    <h3>详细分析</h3>
+                    
+                    <h4 style="margin-top: 20px;">🔍 AI搜索表现</h4>
+                    <div id="aiPerformanceAnalysis"></div>
+                    
+                    <h4 style="margin-top: 30px;">📊 竞争态势</h4>
+                    <div id="competitiveAnalysis"></div>
+                    
+                    <h4 style="margin-top: 30px;">📝 内容评估</h4>
+                    <div id="contentAnalysis"></div>
+                </div>
+                
+                <!-- 优化建议 -->
+                <div class="result-card">
+                    <h3>优化建议</h3>
+                    <div class="recommendation-list" id="recommendationList">
+                        <!-- 动态生成建议 -->
+                    </div>
+                </div>
+                
+                <!-- ROI预测 -->
+                <div class="result-card">
+                    <h3>ROI预测</h3>
+                    <p>基于行业平均数据，实施GEO优化后的预期效果：</p>
+                    <div class="metric-grid">
+                        <div class="metric-card">
+                            <div class="metric-value">+150%</div>
+                            <div class="metric-label">预期ROI提升</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">-60%</div>
+                            <div class="metric-label">获客成本降低</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">+200%</div>
+                            <div class="metric-label">品牌曝光增长</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">3个月</div>
+                            <div class="metric-label">预期见效时间</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- CTA -->
+                <div class="cta-section">
+                    <h3>准备提升您的AI搜索表现？</h3>
+                    <p>LEAP专业团队为您提供定制化的GEO优化方案</p>
+                    <a href="#" class="cta-btn" onclick="downloadReport()">下载完整报告</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        let diagnosisData = {
+            basicInfo: {},
+            questions: [],
+            contentAssessment: {}
+        };
+        
+        // 进度条更新
+        function updateProgress() {
+            const progress = (currentStep / 5) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+        
+        // 下一步
+        function nextStep(step) {
+            if (step === 1) {
+                // 验证基本信息
+                const brandName = document.getElementById('brandName').value;
+                const industry = document.getElementById('industry').value;
+                
+                if (!brandName || !industry) {
+                    alert('请填写必填项');
+                    return;
+                }
+                
+                // 保存数据
+                diagnosisData.basicInfo = {
+                    brandName: brandName,
+                    industry: industry,
+                    website: document.getElementById('website').value,
+                    competitors: document.getElementById('competitors').value,
+                    aiPlatforms: Array.from(document.querySelectorAll('input[name="aiPlatforms"]:checked')).map(cb => cb.value)
+                };
+            } else if (step === 2) {
+                // 验证问题
+                const questions = Array.from(document.querySelectorAll('.question-input'))
+                    .map(input => input.value)
+                    .filter(q => q.trim() !== '');
+                
+                if (questions.length < 3) {
+                    alert('请至少输入3个问题');
+                    return;
+                }
+                
+                diagnosisData.questions = questions;
+            }
+            
+            document.getElementById('step' + step).classList.remove('active');
+            document.getElementById('step' + (step + 1)).classList.add('active');
+            currentStep = step + 1;
+            updateProgress();
+        }
+        
+        // 上一步
+        function previousStep(step) {
+            document.getElementById('step' + step).classList.remove('active');
+            document.getElementById('step' + (step - 1)).classList.add('active');
+            currentStep = step - 1;
+            updateProgress();
+        }
+        
+        // 添加问题
+        let questionCount = 3;
+        function addQuestion() {
+            questionCount++;
+            const questionList = document.getElementById('questionList');
+            const newQuestion = document.createElement('div');
+            newQuestion.className = 'question-item';
+            newQuestion.innerHTML = `
+                <label>问题 ${questionCount}</label>
+                <input type="text" class="question-input" placeholder="输入用户可能提出的问题">
+            `;
+            questionList.appendChild(newQuestion);
+        }
+        
+        // 开始诊断
+        function startDiagnosis() {
+            // 收集内容评估数据
+            const form = document.getElementById('contentAssessmentForm');
+            diagnosisData.contentAssessment = {
+                hasFAQ: form.querySelector('input[name="hasFAQ"]:checked')?.value || 'no',
+                updateFrequency: form.querySelector('input[name="updateFrequency"]:checked')?.value || 'rarely',
+                contentTypes: Array.from(form.querySelectorAll('input[name="contentTypes"]:checked')).map(cb => cb.value),
+                hasSchema: form.querySelector('input[name="hasSchema"]:checked')?.value || 'no'
+            };
+            
+            // 进入诊断页面
+            document.getElementById('step3').classList.remove('active');
+            document.getElementById('step4').classList.add('active');
+            currentStep = 4;
+            updateProgress();
+            
+            // 模拟诊断过程
+            simulateDiagnosis();
+        }
+        
+        // 模拟诊断过程
+        function simulateDiagnosis() {
+            const loadingTexts = [
+                '正在分析您的品牌AI搜索表现...',
+                '正在测试关键问题的AI回答...',
+                '正在对比竞争对手表现...',
+                '正在评估内容优化机会...',
+                '正在生成诊断报告...'
+            ];
+            
+            let textIndex = 0;
+            const loadingText = document.getElementById('loadingText');
+            
+            const interval = setInterval(() => {
+                textIndex++;
+                if (textIndex < loadingTexts.length) {
+                    loadingText.textContent = loadingTexts[textIndex];
+                } else {
+                    clearInterval(interval);
+                    showResults();
+                }
+            }, 1500);
+        }
+        
+        // 显示结果
+        function showResults() {
+            document.getElementById('step4').classList.remove('active');
+            document.getElementById('step5').classList.add('active');
+            currentStep = 5;
+            updateProgress();
+            
+            // 计算得分
+            const scores = calculateScores();
+            
+            // 动画显示得分
+            animateScore(scores.overall);
+            
+            // 显示各项指标
+            document.getElementById('mentionRate').textContent = scores.mentionRate + '%';
+            document.getElementById('shareOfVoice').textContent = scores.shareOfVoice + '%';
+            document.getElementById('contentScore').textContent = scores.contentScore + '/100';
+            document.getElementById('techScore').textContent = scores.techScore + '/100';
+            
+            // 生成分析内容
+            generateAnalysis(scores);
+            
+            // 生成建议
+            generateRecommendations(scores);
+        }
+        
+        // 计算得分
+        function calculateScores() {
+            const { contentAssessment, basicInfo } = diagnosisData;
+            
+            // 基础分数
+            let contentScore = 30;
+            let techScore = 20;
+            
+            // 内容完整度评分
+            if (contentAssessment.hasFAQ === 'yes') contentScore += 20;
+            else if (contentAssessment.hasFAQ === 'partial') contentScore += 10;
+            
+            if (contentAssessment.updateFrequency === 'daily') contentScore += 20;
+            else if (contentAssessment.updateFrequency === 'weekly') contentScore += 15;
+            else if (contentAssessment.updateFrequency === 'monthly') contentScore += 10;
+            
+            contentScore += contentAssessment.contentTypes.length * 5;
+            
+            // 技术优化评分
+            if (contentAssessment.hasSchema === 'yes') techScore += 40;
+            else if (contentAssessment.hasSchema === 'partial') techScore += 20;
+            
+            if (basicInfo.website) techScore += 20;
+            
+            // 模拟AI表现指标
+            const mentionRate = Math.floor(Math.random() * 30) + 10;
+            const shareOfVoice = Math.floor(Math.random() * 25) + 5;
+            
+            // 综合得分
+            const overall = Math.floor((contentScore + techScore + mentionRate + shareOfVoice) / 4);
+            
+            return {
+                overall: Math.min(overall, 100),
+                mentionRate,
+                shareOfVoice,
+                contentScore: Math.min(contentScore, 100),
+                techScore: Math.min(techScore, 100)
+            };
+        }
+        
+        // 动画显示得分
+        function animateScore(targetScore) {
+            let currentScore = 0;
+            const scoreNumber = document.getElementById('scoreNumber');
+            const scoreCircle = document.getElementById('scoreCircle');
+            const circumference = 565;
+            
+            const interval = setInterval(() => {
+                currentScore += 2;
+                if (currentScore >= targetScore) {
+                    currentScore = targetScore;
+                    clearInterval(interval);
+                }
+                
+                scoreNumber.textContent = currentScore;
+                const offset = circumference - (currentScore / 100) * circumference;
+                scoreCircle.style.strokeDashoffset = offset;
+            }, 30);
+        }
+        
+        // 生成分析内容
+        function generateAnalysis(scores) {
+            const { basicInfo } = diagnosisData;
+            
+            // AI搜索表现分析
+            let aiPerformance = '<p>';
+            if (scores.mentionRate < 20) {
+                aiPerformance += `<span class="tag tag-red">需要改进</span>您的品牌在AI搜索中的提及率仅为${scores.mentionRate}%，远低于行业平均水平。`;
+            } else if (scores.mentionRate < 35) {
+                aiPerformance += `<span class="tag tag-yellow">有待提升</span>您的品牌AI提及率为${scores.mentionRate}%，还有较大提升空间。`;
+            } else {
+                aiPerformance += `<span class="tag tag-green">表现良好</span>您的品牌AI提及率达到${scores.mentionRate}%，表现不错。`;
+            }
+            aiPerformance += '</p>';
+            document.getElementById('aiPerformanceAnalysis').innerHTML = aiPerformance;
+            
+            // 竞争分析
+            let competitive = '<p>';
+            if (scores.shareOfVoice < 15) {
+                competitive += `<span class="tag tag-red">落后竞争</span>您的品牌声量份额仅占${scores.shareOfVoice}%，需要加强品牌建设。`;
+            } else {
+                competitive += `<span class="tag tag-yellow">竞争激烈</span>您的品牌声量份额为${scores.shareOfVoice}%，在激烈竞争中占有一席之地。`;
+            }
+            competitive += '</p>';
+            document.getElementById('competitiveAnalysis').innerHTML = competitive;
+            
+            // 内容分析
+            let content = '<p>';
+            if (scores.contentScore < 50) {
+                content += '<span class="tag tag-red">内容不足</span>您的内容资产较为薄弱，需要系统性补充。';
+            } else if (scores.contentScore < 70) {
+                content += '<span class="tag tag-yellow">内容尚可</span>您有一定的内容基础，但仍需优化和扩充。';
+            } else {
+                content += '<span class="tag tag-green">内容丰富</span>您的内容资产较为完善，继续保持并优化即可。';
+            }
+            content += '</p>';
+            document.getElementById('contentAnalysis').innerHTML = content;
+        }
+        
+        // 生成建议
+        function generateRecommendations(scores) {
+            const recommendations = [];
+            const { contentAssessment } = diagnosisData;
+            
+            // 根据得分生成建议
+            if (contentAssessment.hasFAQ !== 'yes') {
+                recommendations.push({
+                    priority: 'high',
+                    title: '创建完整的FAQ页面',
+                    description: '覆盖用户购买决策全流程的常见问题，这是提升AI搜索可见度的基础'
+                });
+            }
+            
+            if (contentAssessment.hasSchema !== 'yes') {
+                recommendations.push({
+                    priority: 'high',
+                    title: '实施结构化数据标记',
+                    description: '使用Schema.org标记，帮助AI更好地理解您的内容结构'
+                });
+            }
+            
+            if (scores.mentionRate < 35) {
+                recommendations.push({
+                    priority: 'high',
+                    title: '优化核心问题内容',
+                    description: '针对用户高频问题创建深度内容，提升AI引用概率'
+                });
+            }
+            
+            if (!contentAssessment.contentTypes.includes('video')) {
+                recommendations.push({
+                    priority: 'medium',
+                    title: '增加视频内容',
+                    description: '视频内容在AI搜索中权重较高，建议增加产品演示、教程等视频'
+                });
+            }
+            
+            if (contentAssessment.updateFrequency === 'rarely') {
+                recommendations.push({
+                    priority: 'medium',
+                    title: '提高内容更新频率',
+                    description: '定期更新内容，保持信息的时效性和相关性'
+                });
+            }
+            
+            // 显示建议
+            const recommendationList = document.getElementById('recommendationList');
+            recommendationList.innerHTML = recommendations.map(rec => `
+                <div class="recommendation-item priority-${rec.priority}">
+                    <h4>${rec.title}</h4>
+                    <p>${rec.description}</p>
+                </div>
+            `).join('');
+        }
+        
+        // 下载报告
+        function downloadReport() {
+            alert('完整诊断报告将发送到您的邮箱，我们的专家团队将在24小时内与您联系！');
+        }
+        
+        // 初始化
+        updateProgress();
+    </script>
+</body>
+</html>

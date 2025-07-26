@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eureka AI Visibility Metrics Complete Analysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f7fa;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 18px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .summary-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+        
+        .summary-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .summary-level {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 12px;
+        }
+        
+        .level-l1 { background: #ff6b6b; }
+        .level-l2 { background: #4ecdc4; }
+        .level-l3 { background: #45b7d1; }
+        
+        .summary-metric {
+            font-size: 14px;
+            color: #2d3436;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .summary-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: #2d3436;
+            margin-bottom: 4px;
+        }
+        
+        .summary-target {
+            font-size: 12px;
+            color: #868e96;
+        }
+        
+        .summary-trend {
+            margin-top: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .metric-section {
+            background: white;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 30px;
+            border-bottom: 2px solid #f0f2f5;
+            background: #fafbfc;
+        }
+        
+        .metric-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .metric-info h2 {
+            font-size: 26px;
+            color: #2d3436;
+        }
+        
+        .level-badge {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .metric-score-box {
+            text-align: center;
+            min-width: 200px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+        }
+        
+        .score-main {
+            font-size: 48px;
+            font-weight: 700;
+            line-height: 1;
+        }
+        
+        .score-unit {
+            font-size: 24px;
+            color: #868e96;
+        }
+        
+        .score-target {
+            font-size: 14px;
+            color: #868e96;
+            margin-top: 8px;
+        }
+        
+        .metric-content {
+            padding: 30px;
+        }
+        
+        .definition-box {
+            background: #e3f2fd;
+            border-left: 4px solid #1976d2;
+            padding: 20px;
+            margin-bottom: 24px;
+            border-radius: 4px;
+        }
+        
+        .definition-title {
+            font-weight: 600;
+            color: #1565c0;
+            margin-bottom: 8px;
+        }
+        
+        .definition-formula {
+            font-family: 'Courier New', monospace;
+            background: white;
+            padding: 12px;
+            border-radius: 4px;
+            margin-top: 8px;
+            color: #2d3436;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid #dee2e6;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #868e96;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2d3436;
+        }
+        
+        .detail-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 24px;
+        }
+        
+        .detail-table th {
+            background: #667eea;
+            color: white;
+            padding: 14px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .detail-table td {
+            padding: 14px;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 14px;
+        }
+        
+        .detail-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .trend-up {
+            color: #51cf66;
+            font-weight: 600;
+        }
+        
+        .trend-down {
+            color: #ff6b6b;
+            font-weight: 600;
+        }
+        
+        .trend-neutral {
+            color: #f59f00;
+            font-weight: 600;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: #e9ecef;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: 20px;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 6px;
+            transition: width 1s ease-out;
+            position: relative;
+        }
+        
+        .progress-fill::after {
+            content: attr(data-value);
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+        }
+        
+        .progress-good {
+            background: linear-gradient(90deg, #51cf66 0%, #2ed573 100%);
+        }
+        
+        .progress-warning {
+            background: linear-gradient(90deg, #f59f00 0%, #fd7e14 100%);
+        }
+        
+        .progress-danger {
+            background: linear-gradient(90deg, #ff6b6b 0%, #ee5a6f 100%);
+        }
+        
+        .performance-chart {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .chart-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2d3436;
+            margin-bottom: 16px;
+        }
+        
+        .time-series {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            height: 200px;
+            margin-top: 20px;
+        }
+        
+        .time-bar {
+            flex: 1;
+            background: #667eea;
+            margin: 0 2px;
+            border-radius: 4px 4px 0 0;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .time-bar:hover {
+            background: #5a67d8;
+            transform: scaleY(1.05);
+        }
+        
+        .time-label {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            color: #868e96;
+        }
+        
+        .platform-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+        
+        .platform-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .platform-card.active {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        
+        .platform-icon {
+            width: 48px;
+            height: 48px;
+            background: #667eea;
+            border-radius: 50%;
+            margin: 0 auto 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .platform-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2d3436;
+            margin-bottom: 4px;
+        }
+        
+        .platform-status {
+            font-size: 12px;
+            color: #868e96;
+        }
+        
+        .competitor-analysis {
+            background: #fff8e1;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .competitor-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .competitor-name {
+            width: 120px;
+            font-weight: 600;
+            color: #2d3436;
+        }
+        
+        .competitor-bar {
+            flex: 1;
+            height: 30px;
+            background: #f0f0f0;
+            border-radius: 15px;
+            position: relative;
+            margin: 0 16px;
+        }
+        
+        .competitor-fill {
+            height: 100%;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 12px;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .competitor-us {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .competitor-other {
+            background: #868e96;
+        }
+        
+        .action-recommendations {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 20px;
+            margin-top: 24px;
+            border-radius: 4px;
+        }
+        
+        .action-title {
+            font-weight: 600;
+            color: #2e7d32;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+        
+        .action-list {
+            list-style: none;
+            padding-left: 20px;
+        }
+        
+        .action-list li {
+            position: relative;
+            margin-bottom: 8px;
+            color: #2e7d32;
+        }
+        
+        .action-list li:before {
+            content: "✓";
+            position: absolute;
+            left: -20px;
+            font-weight: bold;
+        }
+        
+        .warning-badge {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background: #ff6b6b;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            font-weight: bold;
+            margin-left: 8px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(255, 107, 107, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 107, 107, 0);
+            }
+        }
+        
+        .freshness-timeline {
+            display: flex;
+            align-items: center;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .timeline-item {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+        
+        .timeline-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 20px;
+            right: -50%;
+            width: 100%;
+            height: 2px;
+            background: #dee2e6;
+        }
+        
+        .timeline-dot {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border: 3px solid #667eea;
+            border-radius: 50%;
+            margin: 0 auto 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #667eea;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .timeline-label {
+            font-size: 12px;
+            color: #495057;
+            margin-bottom: 4px;
+        }
+        
+        .timeline-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2d3436;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Eureka扫地机器人 - AI可见度指标完整分析报告</h1>
+            <p>全方位AI搜索引擎表现监控与优化指南 | 2025年1月27日</p>
+        </div>
+        
+        <!-- 指标概览 -->
+        <div class="summary-grid">
+            <div class="summary-card">
+                <span class="summary-level level-l1">L1-战略级</span>
+                <div class="summary-metric">AI Mention Rate</div>
+                <div class="summary-value">42.8%</div>
+                <div class="summary-target">目标: ≥35%</div>
+                <div class="summary-trend trend-up">↑ +5.2% vs 上周</div>
+            </div>
+            
+            <div class="summary-card">
+                <span class="summary-level level-l1">L1-战略级</span>
+                <div class="summary-metric">SoV-AI</div>
+                <div class="summary-value">23.5%</div>
+                <div class="summary-target">目标: ≥20%</div>
+                <div class="summary-trend trend-up">↑ +2.8% vs 上周</div>
+            </div>
+            
+            <div class="summary-card">
+                <span class="summary-level level-l2">L2-业务级</span>
+                <div class="summary-metric">Brand Citation Score</div>
+                <div class="summary-value">8.2/10</div>
+                <div class="summary-target">目标: ≥7.5/10</div>
+                <div class="summary-trend trend-up">↑ +0.5 vs 上周</div>
+            </div>
+            
+            <div class="summary-card">
+                <span class="summary-level level-l2">L2-业务级</span>
+                <div class="summary-metric">Platform Coverage</div>
+                <div class="summary-value">85%</div>
+                <div class="summary-target">目标: ≥80%</div>
+                <div class="summary-trend trend-neutral">→ 0% vs 上周</div>
+            </div>
+            
+            <div class="summary-card">
+                <span class="summary-level level-l2">L2-业务级</span>
+                <div class="summary-metric">Competitor Gap Score</div>
+                <div class="summary-value">+8.5%</div>
+                <div class="summary-target">目标: ≥+10%</div>
+                <div class="summary-trend trend-down">↓ -1.5% vs 上周</div>
+            </div>
+            
+            <div class="summary-card">
+                <span class="summary-level level-l3">L3-运营级</span>
+                <div class="summary-metric">Content Freshness Index</div>
+                <div class="summary-value">0.82</div>
+                <div class="summary-target">目标: ≥0.75</div>
+                <div class="summary-trend trend-up">↑ +0.07 vs 上周</div>
+            </div>
+        </div>
+        
+        <!-- AI Mention Rate -->
+        <div class="metric-section">
+            <div class="metric-header">
+                <div class="metric-info">
+                    <h2>AI Mention Rate</h2>
+                    <span class="level-badge level-l1">L1-战略级</span>
+                </div>
+                <div class="metric-score-box">
+                    <div class="score-main" style="color: #51cf66;">42.8<span class="score-unit">%</span></div>
+                    <div class="score-target">目标值: ≥35% (90天)</div>
+                    <div class="trend-up">↑ +5.2% vs 上周</div>
+                </div>
+            </div>
+            
+            <div class="metric-content">
+                <div class="definition-box">
+                    <div class="definition-title">📊 指标定义</div>
+                    <div>品牌在目标问题集中被AI提及的比例</div>
+                    <div class="definition-formula">
+                        提及率 = (品牌被提及的问题数 / 监测问题总数) × 100%<br>
+                        = (514 / 1,200) × 100% = 42.8%
+                    </div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">监测问题总数</div>
+                        <div class="stat-value">1,200</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">品牌被提及数</div>
+                        <div class="stat-value">514</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">首位提及</div>
+                        <div class="stat-value">198</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">独家提及</div>
+                        <div class="stat-value">87</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">更新频率</div>
+                        <div class="stat-value">每6小时</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">负责团队</div>
+                        <div class="stat-value">内容运营部</div>
+                    </div>
+                </div>
+                
+                <div class="performance-chart">
+                    <div class="chart-title">24小时趋势图</div>
+                    <div class="time-series">
+                        <div class="time-bar" style="height: 70%"><span class="time-label">00:00</span></div>
+                        <div class="time-bar" style="height: 65%"><span class="time-label">04:00</span></div>
+                        <div class="time-bar" style="height: 72%"><span class="time-label">08:00</span></div>
+                        <div class="time-bar" style="height: 85%"><span class="time-label">12:00</span></div>
+                        <div class="time-bar" style="height: 92%"><span class="time-label">16:00</span></div>
+                        <div class="time-bar" style="height: 88%"><span class="time-label">20:00</span></div>
+                    </div>
+                </div>
+                
+                <table class="detail-table">
+                    <thead>
+                        <tr>
+                            <th>问题类别</th>
+                            <th>监测数量</th>
+                            <th>提及次数</th>
+                            <th>提及率</th>
+                            <th>主要竞品</th>
+                            <th>优化优先级</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>产品推荐</td>
+                            <td>320</td>
+                            <td>168</td>
+                            <td>52.5%</td>
+                            <td>小米、石头</td>
+                            <td style="color: #51cf66;">低</td>
+                        </tr>
+                        <tr>
+                            <td>功能对比</td>
+                            <td>280</td>
+                            <td>134</td>
+                            <td>47.9%</td>
+                            <td>iRobot、科沃斯</td>
+                            <td style="color: #f59f00;">中</td>
+                        </tr>
+                        <tr>
+                            <td>购买建议</td>
+                            <td>240</td>
+                            <td>98</td>
+                            <td>40.8%</td>
+                            <td>戴森、小米</td>
+                            <td style="color: #f59f00;">中</td>
+                        </tr>
+                        <tr>
+                            <td>技术规格</td>
+                            <td>200</td>
+                            <td>72</td>
+                            <td>36.0%</td>
+                            <td>石头、科沃斯</td>
+                            <td style="color: #ff6b6b;">高</td>
+                        </tr>
+                        <tr>
+                            <td>故障解决</td>
+                            <td>160</td>
+                            <td>42</td>
+                            <td>26.3%</td>
+                            <td>小米、iRobot</td>
+                            <td style="color: #ff6b6b;">高</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="action-recommendations">
+                    <div class="action-title">🎯 优化建议</div>
+                    <ul class="action-list">
+                        <li>加强技术规格类内容的SEO优化，提升AI引用率</li>
+                        <li>创建更多故障解决方案内容，填补内容空白</li>
+                        <li>维护产品推荐类的领先优势，持续更新内容</li>
+                        <li>监控竞品动态，及时调整内容策略</li>
+                    </ul>
+                </div>
+                
+                <div class="progress-bar">
+                    <div class="progress-fill progress-good" style="width: 85%" data-value="122%达成"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- SoV-AI -->
+        <div class="metric-section">
+            <div class="metric-header">
+                <div class="metric-info">
+                    <h2>SoV-AI (Answer Share of Voice)</h2>
+                    <span class="level-badge level-l1">L1-战略级</span>
+                </div>
+                <div class="metric-score-box">
+                    <div class="score-main" style="color: #51cf66;">23.5<span class="score-unit">%</span></div>
+                    <div class="score-target">目标值: ≥20%</div>
+                    <div class="trend-up">↑ +2.8% vs 上周</div>
+                </div>
+            </div>
+            
+            <div class="metric-content">
+                <div class="definition-box">
+                    <div class="definition-title">📊 指标定义</div>
+                    <div>AI回答中品牌内容占比</div>
+                    <div class="definition-formula">
+                        SoV-AI = (品牌内容字数 / 总回答字数) × 100%<br>
+                        = (42,865 / 182,400) × 100% = 23.5%
+                    </div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">总回答字数</div>
+                        <div class="stat-value">182,400</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">品牌内容字数</div>
+                        <div class="stat-value">42,865</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">平均占比</div>
+                        <div class="stat-value">235字/答</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">内容质量分</div>
+                        <div class="stat-value">8.9/10</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">更新频率</div>
+                        <div class="stat-value">每日</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">负责团队</div>
+                        <div class="stat-value">策略分析部</div>
+                    </div>
+                </div>
+                
+                <table class="detail-table">
+                    <thead>
+                        <tr>
+                            <th>回答场景</th>
+                            <th>总字数</th>
+                            <th>Eureka内容</th>
+                            <th>占比</th>
+                            <th>质量评分</th>
+                            <th>改进空间</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>产品特性介绍</td>
+                            <td>52,300</td>
+                            <td>14,892</td>
+                            <td>28.5%</td>
+                            <td>9.3/10</td>
+                            <td>维持</td>
+                        </tr>
+                        <tr>
+                            <td>购买推荐</td>
+                            <td>43,200</td>
+                            <td>10,800</td>
+                            <td>25.0%</td>
+                            <td>8.8/10</td>
+                            <td>小幅提升</td>
+                        </tr>
+                        <tr>
+                            <td>技术对比</td>
+                            <td>38,500</td>
+                            <td>8,470</td>
+                            <td>22.0%</td>
+                            <td>8.5/10</td>
+                            <td>中度提升</td>
+                        </tr>
+                        <tr>
+                            <td>使用教程</td>
+                            <td>28,900</td>
+                            <td>5,202</td>
+                            <td>18.0%</td>
+                            <td>9.1/10</td>
+                            <td>显著提升</td>
+                        </tr>
+                        <tr>
+                            <td>售后支持</td>
+                            <td>19,500</td>
+                            <td>3,501</td>
+                            <td>17.9%</td>
+                            <td>8.2/10</td>
+                            <td>重点改进</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="progress-bar">
+                    <div class="progress-fill progress-good" style="width: 78%" data-value="117%达成"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Brand Citation Score -->
+        <div class="metric-section">
+            <div class="metric-header">
+                <div class="metric-info">
+                    <h2>Brand Citation Score</h2>
+                    <span class="level-badge level-l2">L2-业务级</span>
+                </div>
+                <div class="metric-score-box">
+                    <div class="score-main" style="color: #51cf66;">8.2<span class="score-unit">/10</span></div>
+                    <div class="score-target">目标值: ≥7.5/10</div>
+                    <div class="trend-up">↑ +0.5 vs 上周</div>
+                </div>
+            </div>
+            
+            <div class="metric-content">
+                <div class="definition-box">
+                    <div class="definition-title">📊 指标定义</div>
+                    <div>品牌内容被AI引用的质量分数</div>
+                    <div class="definition-formula">
+                        引用分 = Σ(引用位置权重 × 引用长度) / 总引用次数
+                    </div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">总引用次数</div>
+                        <div class="stat-value">3,427</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">首位引用</div>
+                        <div class="stat-value">1,234</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">长引用(>100字)</div>
+                        <div class="stat-value">892</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">准确率</div>
+                        <div class="stat-value">94.2%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">更新频率</div>
+                        <div class="stat-value">每周</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">负责团队</div>
+                        <div class="stat-value">内容质量部</div>
+                    </div>
+                </div>
+                
+                <table class="detail-table">
+                    <thead>
+                        <tr>
+                            <th>引用位置</th>
+                            <th>引用次数</th>
+                            <th>位置权重</th>
+                            <th>平均长度</th>
+                            <th>贡献得分</th>
+                            <th>质量评价</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>第1位</td>
+                            <td>1,234</td>
+                            <td>1.0</td>
+                            <td>156字</td>
+                            <td>3.2</td>
+                            <td style="color: #51cf66;">优秀</td>
+                        </tr>
+                        <tr>
+                            <td>第2位</td>
+                            <td>892</td>
+                            <td>0.8</td>
+                            <td>124字</td>
+                            <td>2.1</td>
+                            <td style="color: #51cf66;">良好</td>
+                        </tr>
+                        <tr>
+                            <td>第3位</td>
+                            <td>678</td>
+                            <td>0.6</td>
+                            <td>98字</td>
+                            <td>1.5</td>
+                            <td style="color: #f59f00;">一般</td>
+                        </tr>
+                        <tr>
+                            <td>第4位及以后</td>
+                            <td>623</td>
+                            <td>0.4</td>
+                            <td>72字</td>
+                            <td>1.4</td>
+                            <td style="color: #f59f00;">一般</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="progress-bar">
+                    <div class="progress-fill progress-good" style="width: 82%" data-value="109%达成"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Platform Coverage -->
+        <div class="metric-section">
+            <div class="metric-header">
+                <div class="metric-info">
+                    <h2>Platform Coverage</h2>
+                    <span class="level-badge level-l2">L2-业务级</span>
+                </div>
+                <div class="metric-score-box">
+                    <div class="score-main" style="color: #51cf66;">85<span class="score-unit">%</span></div>
+                    <div class="score-target">目标值: ≥80%</div>
+                    <div class="trend-neutral">→ 0% vs 上周</div>
+                </div>
+            </div>
+            
+            <div class="metric-content">
+                <div class="definition-box">
+                    <div class="definition-title">📊 指标定义</div>
+                    <div>品牌在各AI平台的覆盖率</div>
+                    <div class="definition-formula">
+                        覆盖率 = (有品牌展示的平台数 / 目标平台总数) × 100%<br>
+                        = (11 / 13) × 100% = 84.6%
+                    </div>
+                </div>
+                
+                <div class="platform-grid">
+                    <div class="platform-card active">
+                        <div class="platform-icon">Chat</div>
+                        <div class="platform-name">ChatGPT</div>
+                        <div class="platform-status" style="color: #51cf66;">✓ 已覆盖</div>
+                    </div>
+                    <div class="platform-card active">
+                        <div class="platform-icon">Perp</div>
+                        <div class="platform-name">Perplexity</div>
+                        <div class="platform-status" style="color: #51cf66;">✓ 已覆盖</div>
+                    </div>
+                    <div class="platform-card active">
+                        <div class="platform-icon">SGE</div>
+                        <div class="platform-name">Google SGE</div>
+                        <div class="platform-status" style="color: #51cf66;">✓ 已覆盖</div>
+                    </div>
+                    <div class="platform-card active">
+                        <div class="platform-icon">Bing</div>
+                        <div class="platform-name">Bing Chat</div>
+                        <div class="platform-status" style="color: #51cf66;">✓ 已覆盖</div>
+                    </div>
+                    <div class="platform-card active">
+                        <div class="platform-icon">Clau</div>
+                        <div class="platform-name">Claude</div>
+                        <div class="platform-status" style="color: #51cf66;">✓ 已覆盖</div>
+                    </div>
+                    <div class="platform-card">
+                        <div class="platform-icon">Gem</div>
+                        <div class="platform-name">Gemini</div>
+                        <div class="platform-status" style="color: #ff6b6b;">✗ 待接入</div>
+                    </div>
+                </div>
+                
+                <table class="detail-table">
+                    <thead>
+                        <tr>
+                            <th>平台名称</th>
+                            <th>覆盖状态</th>
+                            <th>内容数量</th>
+                            <th>更新频率</th>
+                            <th>表现评分</th>
+                            <th>优先级</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>ChatGPT</td>
+                            <td style="color: #51cf66;">已覆盖</td>
+                            <td>1,245</td>
+                            <td>每日</td>
+                            <td>9.2/10</td>
+                            <td>P0</td>
+                        </tr>
+                        <tr>
+                            <td>Perplexity</td>
+                            <td style="color: #51cf66;">已覆盖</td>
+                            <td>987</td>
+                            <td>每日</td>
+                            <td>8.8/10</td>
+                            <td>P0</td>
+                        </tr>
+                        <tr>
+                            <td>Google SGE</td>
+                            <td style="color: #51cf66;">已覆盖</td>
+                            <td>856</td>
+                            <td>每日</td>
+                            <td>8.5/10</td>
+                            <td>P0</td>
+                        </tr>
+                        <tr>
+                            <td>Gemini</td>
+                            <td style="color: #ff6b6b;">待接入</td>
+                            <td>0</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>P1</td>
+                        </tr>
+                        <tr>
+                            <td>Llama</td>
+                            <td style="color: #ff6b6b;">计划中</td>
+                            <td>0</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>P2</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="progress-bar">
+                    <div class="progress-fill progress-good" style="width: 85%" data-value="106%达成"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Competitor Gap Score -->
+        <div class="metric-section">
+            <div class="metric-header">
+                <div class="metric-info">
+                    <h2>Competitor Gap Score</h2>
+                    <span class="level-badge level-l2">L2-业务级</span>
+                    <span class="warning-badge">!</span>
+                </div>
+                <div class="metric-score-box">
+                    <div class="score-main" style="color: #f59f00;">+8.5<span class="score-unit">%</span></div>
+                    <div class="score-target">目标值: ≥+10%</div>
+                    <div class="trend-down">↓ -1.5% vs 上周</div>
+                </div>
+            </div>
+            
+            <div class="metric-content">
+                <div class="definition-box">
+                    <div class="definition-title">📊 指标定义</div>
+                    <div>与竞品的AI可见度差距</div>
+                    <div class="definition-formula">
+                        差距分 = 我方AI Mention Rate - 竞品平均Mention Rate<br>
+                        = 42.8% - 34.3% = +8.5%
+                    </div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">我方提及率</div>
+                        <div class="stat-value">42.8%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">竞品平均</div>
+                        <div class="stat-value">34.3%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">领先品牌数</div>
+                        <div class="stat-value">3/5</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">最大差距</div>
+                        <div class="stat-value">+12.3%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">更新频率</div>
+                        <div class="stat-value">每周</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">负责团队</div>
+                        <div class="stat-value">市场情报部</div>
+                    </div>
+                </div>
+                
+                <div class="competitor-analysis">
+                    <div class="competitor-item">
+                        <div class="competitor-name">Eureka</div>
+                        <div class="competitor-bar">
+                            <div class="competitor-fill competitor-us" style="width: 42.8%;">42.8%</div>
+                        </div>
+                    </div>
+                    <div class="competitor-item">
+                        <div class="competitor-name">戴森</div>
+                        <div class="competitor-bar">
+                            <div class="competitor-fill competitor-other" style="width: 48.6%;">48.6%</div>
+                        </div>
+                    </div>
+                    <div class="competitor-item">
+                        <div class="competitor-name">小米</div>
+                        <div class="competitor-bar">
+                            <div class="competitor-fill competitor-other" style="width: 45.2%;">45.2%</div>
+                        </div>
+                    </div>
+                    <div class="competitor-item">
+                        <div class="competitor-name">石头科技</div>
+                        <div class="competitor-bar">
+                            <div class="competitor-fill competitor-other" style="width: 38.5%;">38.5%</div>
+                        </div>
+                    </div>
+                    <div class="competitor-item">
+                        <div class="competitor-name">科沃斯</div>
+                        <div class="competitor-bar">
+                            <div class="competitor-fill competitor-other" style="width: 36.9%;">36.9%</div>
+                        </div>
+                    </div>
+                    <div class="competitor-item">
+                        <div class="competitor-name">iRobot</div>
+                        <div class="competitor-bar">
+                            <div class="competitor-fill competitor-other" style="width: 35.2%;">35.2%</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="action-recommendations">
+                    <div class="action-title">⚠️ 紧急行动计划</div>
+                    <ul class="action-list">
+                        <li>分析戴森和小米的高提及内容特征</li>
+                        <li>加强差异化功能的内容建设</li>
+                        <li>优化技术创新相关内容的AI友好度</li>
+                        <li>增加对比型内容，突出独特优势</li>
+                    </ul>
+                </div>
+                
+                <div class="progress-bar">
+                    <div class="progress-fill progress-warning" style="width: 85%" data-value="85%达成"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Content Freshness Index -->
+        <div class="metric-section">
+            <div class="metric-header">
+                <div class="metric-info">
+                    <h2>Content Freshness Index</h2>
+                    <span class="level-badge level-l3">L3-运营级</span>
+                </div>
+                <div class="metric-score-box">
+                    <div class="score-main" style="color: #51cf66;">0.82</div>
+                    <div class="score-target">目标值: ≥0.75</div>
+                    <div class="trend-up">↑ +0.07 vs 上周</div>
+                </div>
+            </div>
+            
+            <div class="metric-content">
+                <div class="definition-box">
+                    <div class="definition-title">📊 指标定义</div>
+                    <div>AI引用内容的时效性指数</div>
+                    <div class="definition-formula">
+                        新鲜度 = Σ(内容权重 × e^(-天数/30)) / 总内容数
+                    </div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">总内容数</div>
+                        <div class="stat-value">2,456</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">30天内更新</div>
+                        <div class="stat-value">892</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">7天内更新</div>
+                        <div class="stat-value">324</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">平均内容年龄</div>
+                        <div class="stat-value">42天</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">更新频率</div>
+                        <div class="stat-value">每日</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">负责团队</div>
+                        <div class="stat-value">内容更新组</div>
+                    </div>
+                </div>
+                
+                <div class="freshness-timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-dot">0</div>
+                        <div class="timeline-label">今日</div>
+                        <div class="timeline-value">45条</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot">7</div>
+                        <div class="timeline-label">7天内</div>
+                        <div class="timeline-value">324条</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot">30</div>
+                        <div class="timeline-label">30天内</div>
+                        <div class="timeline-value">892条</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot">90</div>
+                        <div class="timeline-label">90天内</div>
+                        <div class="timeline-value">1,567条</div>
+                    </div>
+                </div>
+                
+                <table class="detail-table">
+                    <thead>
+                        <tr>
+                            <th>内容类型</th>
+                            <th>总数量</th>
+                            <th>30天内更新</th>
+                            <th>新鲜度指数</th>
+                            <th>AI引用频率</th>
+                            <th>优化建议</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>产品规格</td>
+                            <td>456</td>
+                            <td>234</td>
+                            <td>0.89</td>
+                            <td>高</td>
+                            <td>保持更新</td>
+                        </tr>
+                        <tr>
+                            <td>使用教程</td>
+                            <td>723</td>
+                            <td>289</td>
+                            <td>0.85</td>
+                            <td>高</td>
+                            <td>增加视频</td>
+                        </tr>
+                        <tr>
+                            <td>常见问题</td>
+                            <td>389</td>
+                            <td>156</td>
+                            <td>0.78</td>
+                            <td>中</td>
+                            <td>更新答案</td>
+                        </tr>
+                        <tr>
+                            <td>用户评价</td>
+                            <td>534</td>
+                            <td>178</td>
+                            <td>0.76</td>
+                            <td>中</td>
+                            <td>收集新评</td>
+                        </tr>
+                        <tr>
+                            <td>技术文档</td>
+                            <td>354</td>
+                            <td>35</td>
+                            <td>0.52</td>
+                            <td>低</td>
+                            <td style="color: #ff6b6b;">紧急更新</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="progress-bar">
+                    <div class="progress-fill progress-good" style="width: 82%" data-value="109%达成"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 页面加载动画
+        window.addEventListener('load', function() {
+            // 进度条动画
+            const progressBars = document.querySelectorAll('.progress-fill');
+            progressBars.forEach(bar => {
+                const width = bar.style.width;
+                bar.style.width = '0';
+                setTimeout(() => {
+                    bar.style.width = width;
+                }, 100);
+            });
+            
+            // 时间序列图动画
+            const timeBars = document.querySelectorAll('.time-bar');
+            timeBars.forEach((bar, index) => {
+                const height = bar.style.height;
+                bar.style.height = '0';
+                setTimeout(() => {
+                    bar.style.height = height;
+                }, index * 100);
+            });
+            
+            // 数值动画
+            const values = document.querySelectorAll('.score-main');
+            values.forEach(element => {
+                const text = element.textContent;
+                const isPercentage = text.includes('%');
+                const isRatio = text.includes('/');
+                const isPlus = text.includes('+');
+                
+                if (!isNaN(parseFloat(text))) {
+                    const finalValue = parseFloat(text);
+                    let currentValue = 0;
+                    const increment = finalValue / 30;
+                    const timer = setInterval(() => {
+                        currentValue += increment;
+                        if (currentValue >= finalValue) {
+                            element.textContent = text;
+                            clearInterval(timer);
+                        } else {
+                            if (isPercentage) {
+                                element.innerHTML = currentValue.toFixed(1) + '<span class="score-unit">%</span>';
+                            } else if (isRatio) {
+                                element.innerHTML = currentValue.toFixed(1) + '<span class="score-unit">/10</span>';
+                            } else if (isPlus) {
+                                element.innerHTML = '+' + currentValue.toFixed(1) + '<span class="score-unit">%</span>';
+                            } else {
+                                element.textContent = currentValue.toFixed(2);
+                            }
+                        }
+                    }, 30);
+                }
+            });
+        });
+        
+        // 实时数据更新模拟
+        setInterval(() => {
+            const cards = document.querySelectorAll('.stat-card');
+            const randomIndex = Math.floor(Math.random() * cards.length);
+            const card = cards[randomIndex];
+            
+            card.style.transform = 'scale(1.05) translateY(-5px)';
+            card.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            card.querySelector('.stat-value').style.color = 'white';
+            card.querySelector('.stat-label').style.color = 'white';
+            
+            setTimeout(() => {
+                card.style.transform = '';
+                card.style.background = '';
+                card.querySelector('.stat-value').style.color = '';
+                card.querySelector('.stat-label').style.color = '';
+            }, 1000);
+        }, 4000);
+    </script>
+</body>
+</html>

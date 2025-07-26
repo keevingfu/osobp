@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEAP Business Process Diagrams</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f7fa;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 36px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 18px;
+            color: #666;
+        }
+        
+        .svg-container {
+            width: 100%;
+            overflow-x: auto;
+            overflow-y: auto;
+            max-height: 80vh;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            background: #fafafa;
+        }
+        
+        svg {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>LEAP Business Architecture</h1>
+            <p>Product Matrix, Business Process, Organization Structure & Value Creation</p>
+        </div>
+        
+        <div class="svg-container">
+            <svg viewBox="0 0 1200 2400" xmlns="http://www.w3.org/2000/svg">
+              <!-- 背景 -->
+              <rect width="1200" height="2400" fill="#f5f7fa"/>
+              
+              <!-- 标题 -->
+              <text x="600" y="50" text-anchor="middle" font-size="36" font-weight="bold" fill="#333">LEAP业务架构可视化</text>
+              
+              <!-- 1. 产品矩阵图 (0, 100) -->
+              <g transform="translate(50, 100)">
+                <text x="500" y="30" text-anchor="middle" font-size="28" font-weight="bold" fill="#667eea">一、产品矩阵全景图</text>
+                
+                <!-- 矩阵背景 -->
+                <rect x="0" y="60" width="1100" height="400" fill="white" stroke="#e0e0e0" stroke-width="2" rx="10"/>
+                
+                <!-- 横轴标签 -->
+                <text x="550" y="50" text-anchor="middle" font-size="16" fill="#666">客户价值</text>
+                <text x="100" y="90" font-size="14" fill="#999">基础服务</text>
+                <text x="400" y="90" font-size="14" fill="#999">标准服务</text>
+                <text x="700" y="90" font-size="14" fill="#999">高级服务</text>
+                <text x="950" y="90" font-size="14" fill="#999">企业定制</text>
+                
+                <!-- 纵轴标签 -->
+                <text x="-20" y="260" text-anchor="middle" font-size="16" fill="#666" transform="rotate(-90, -20, 260)">业务线</text>
+                
+                <!-- Social增长产品线 -->
+                <g transform="translate(50, 120)">
+                  <rect x="0" y="0" width="200" height="60" fill="#f093fb" opacity="0.3" rx="5"/>
+                  <text x="100" y="35" text-anchor="middle" font-size="14" font-weight="bold">Social Starter</text>
+                  
+                  <rect x="250" y="-10" width="250" height="80" fill="#f093fb" opacity="0.5" rx="5"/>
+                  <text x="375" y="35" text-anchor="middle" font-size="16" font-weight="bold">Social Pro ⭐</text>
+                  
+                  <rect x="550" y="0" width="200" height="60" fill="#f093fb" opacity="0.4" rx="5"/>
+                  <text x="650" y="35" text-anchor="middle" font-size="14" font-weight="bold">Social Plus</text>
+                  
+                  <rect x="800" y="-5" width="200" height="70" fill="#f093fb" opacity="0.6" rx="5"/>
+                  <text x="900" y="35" text-anchor="middle" font-size="14" font-weight="bold">Social Enterprise</text>
+                </g>
+                
+                <!-- Search增长产品线 -->
+                <g transform="translate(50, 220)">
+                  <rect x="0" y="0" width="200" height="60" fill="#4facfe" opacity="0.3" rx="5"/>
+                  <text x="100" y="35" text-anchor="middle" font-size="14" font-weight="bold">GEO Starter</text>
+                  
+                  <rect x="250" y="-10" width="250" height="80" fill="#4facfe" opacity="0.5" rx="5"/>
+                  <text x="375" y="35" text-anchor="middle" font-size="16" font-weight="bold">GEO Pro ⭐</text>
+                  
+                  <rect x="550" y="0" width="200" height="60" fill="#4facfe" opacity="0.4" rx="5"/>
+                  <text x="650" y="35" text-anchor="middle" font-size="14" font-weight="bold">GEO Plus</text>
+                  
+                  <rect x="800" y="-5" width="200" height="70" fill="#4facfe" opacity="0.6" rx="5"/>
+                  <text x="900" y="35" text-anchor="middle" font-size="14" font-weight="bold">GEO Enterprise</text>
+                </g>
+                
+                <!-- 赋能服务线 -->
+                <g transform="translate(50, 340)">
+                  <rect x="100" y="0" width="300" height="50" fill="#fa709a" opacity="0.3" rx="5"/>
+                  <text x="250" y="30" text-anchor="middle" font-size="14">私域赋能服务</text>
+                  
+                  <rect x="500" y="0" width="300" height="50" fill="#fee140" opacity="0.3" rx="5"/>
+                  <text x="650" y="30" text-anchor="middle" font-size="14">DAM效率系统</text>
+                </g>
+                
+                <!-- 组合方案标注 -->
+                <g transform="translate(300, 150)">
+                  <path d="M 0 0 Q 50 50 100 50" fill="none" stroke="#667eea" stroke-width="2" stroke-dasharray="5,5"/>
+                  <circle cx="0" cy="0" r="5" fill="#667eea"/>
+                  <circle cx="100" cy="50" r="5" fill="#667eea"/>
+                  <rect x="110" y="35" width="150" height="30" fill="#667eea" rx="15"/>
+                  <text x="185" y="55" text-anchor="middle" font-size="12" fill="white">爆款组合</text>
+                </g>
+              </g>
+              
+              <!-- 2. 业务流程图 (0, 600) -->
+              <g transform="translate(50, 600)">
+                <text x="500" y="30" text-anchor="middle" font-size="28" font-weight="bold" fill="#667eea">二、核心业务流程</text>
+                
+                <!-- 背景 -->
+                <rect x="0" y="60" width="1100" height="350" fill="white" stroke="#e0e0e0" stroke-width="2" rx="10"/>
+                
+                <!-- Social业务流程 -->
+                <text x="550" y="100" text-anchor="middle" font-size="20" font-weight="bold" fill="#f093fb">Social增长业务流程</text>
+                
+                <g transform="translate(50, 130)">
+                  <!-- 流程节点 -->
+                  <rect x="0" y="0" width="120" height="60" fill="#f093fb" rx="30"/>
+                  <text x="60" y="25" text-anchor="middle" font-size="12" fill="white" font-weight="bold">内容策划</text>
+                  <text x="60" y="45" text-anchor="middle" font-size="10" fill="white">用户洞察</text>
+                  
+                  <rect x="160" y="0" width="120" height="60" fill="#f093fb" rx="30"/>
+                  <text x="220" y="25" text-anchor="middle" font-size="12" fill="white" font-weight="bold">AIGC生产</text>
+                  <text x="220" y="45" text-anchor="middle" font-size="10" fill="white">批量制作</text>
+                  
+                  <rect x="320" y="0" width="120" height="60" fill="#f093fb" rx="30"/>
+                  <text x="380" y="25" text-anchor="middle" font-size="12" fill="white" font-weight="bold">矩阵分发</text>
+                  <text x="380" y="45" text-anchor="middle" font-size="10" fill="white">多平台投放</text>
+                  
+                  <rect x="480" y="0" width="120" height="60" fill="#f093fb" rx="30"/>
+                  <text x="540" y="25" text-anchor="middle" font-size="12" fill="white" font-weight="bold">数据监控</text>
+                  <text x="540" y="45" text-anchor="middle" font-size="10" fill="white">实时优化</text>
+                  
+                  <rect x="640" y="0" width="120" height="60" fill="#fa709a" rx="30"/>
+                  <text x="700" y="25" text-anchor="middle" font-size="12" fill="white" font-weight="bold">私域转化</text>
+                  <text x="700" y="45" text-anchor="middle" font-size="10" fill="white">用户沉淀</text>
+                  
+                  <rect x="800" y="0" width="120" height="60" fill="#fee140" rx="30"/>
+                  <text x="860" y="25" text-anchor="middle" font-size="12" fill="white" font-weight="bold">内容复用</text>
+                  <text x="860" y="45" text-anchor="middle" font-size="10" fill="white">DAM入库</text>
+                  
+                  <!-- 箭头 -->
+                  <path d="M 120 30 L 160 30" stroke="#667eea" stroke-width="3" marker-end="url(#arrowhead)"/>
+                  <path d="M 280 30 L 320 30" stroke="#667eea" stroke-width="3" marker-end="url(#arrowhead)"/>
+                  <path d="M 440 30 L 480 30" stroke="#667eea" stroke-width="3" marker-end="url(#arrowhead)"/>
+                  <path d="M 600 30 L 640 30" stroke="#667eea" stroke-width="3" marker-end="url(#arrowhead)"/>
+                  <path d="M 760 30 L 800 30" stroke="#667eea" stroke-width="3" marker-end="url(#arrowhead)"/>
+                  
+                  <!-- 回流箭头 -->
+                  <path d="M 860 60 Q 860 100 440 100 Q 20 100 20 60" stroke="#667eea" stroke-width="2" stroke-dasharray="5,5" fill="none" marker-end="url(#arrowhead)"/>
+                </g>
+                
+                <!-- GEO业务流程 -->
+                <text x="550" y="280" text-anchor="middle" font-size="20" font-weight="bold" fill="#4facfe">Search增长业务流程</text>
+                
+                <g transform="translate(50, 310)">
+                  <!-- 流程节点 -->
+                  <rect x="0" y="0" width="120" height="60" fill="#4facfe" rx="30"/>
+                  <text x="60" y="25" text-anchor="middle" font-size="12" fill="white" font-weight="bold">问题挖掘</text>
+                  <text x="60" y="45" text-anchor="middle" font-size="10" fill="white">AI搜索分析</text>
+                  
+                  <rect x="160" y="0" width="120" height="60" fill="#4facfe" rx="30"/>
+                  <text x="220" y="25" text-anchor="middle" font-size="12" fill="white" font-weight="bold">内容优化</text>
+                  <text x="220" y="45" text-anchor="middle" font-size="10" fill="white">多模态处理</text>
+                  
+                  <rect x="320" y="0" width="120" height="60" fill="#4facfe" rx="30"/>
+                  <text x="380" y="25" text-anchor="middle" font-size="12" fill="white" font-weight="bold">结构化</text>
+                  <text x="380" y="45" text-anchor="middle" font-size="10" fill="white">Schema标记</text>
+                  
+                  <rect x="480" y="0" width="120" height="60" fill="#4facfe" rx="30"/>
+                  <text x="540" y="25" text-anchor="middle" font-size="12" fill="white" font-weight="bold">可见度监控</text>
+                  <text x="540" y="45" text-anchor="middle" font-size="10" fill="white">AI引用追踪</text>
+                  
+                  <rect x="640" y="0" width="120" height="60" fill="#fa709a" rx="30"/>
+                  <text x="700" y="25" text-anchor="middle" font-size="12" fill="white" font-weight="bold">流量承接</text>
+                  <text x="700" y="45" text-anchor="middle" font-size="10" fill="white">私域转化</text>
+                  
+                  <rect x="800" y="0" width="120" height="60" fill="#fee140" rx="30"/>
+                  <text x="860" y="25" text-anchor="middle" font-size="12" fill="white" font-weight="bold">效果回流</text>
+                  <text x="860" y="45" text-anchor="middle" font-size="10" fill="white">优化迭代</text>
+                  
+                  <!-- 箭头 -->
+                  <path d="M 120 30 L 160 30" stroke="#667eea" stroke-width="3" marker-end="url(#arrowhead)"/>
+                  <path d="M 280 30 L 320 30" stroke="#667eea" stroke-width="3" marker-end="url(#arrowhead)"/>
+                  <path d="M 440 30 L 480 30" stroke="#667eea" stroke-width="3" marker-end="url(#arrowhead)"/>
+                  <path d="M 600 30 L 640 30" stroke="#667eea" stroke-width="3" marker-end="url(#arrowhead)"/>
+                  <path d="M 760 30 L 800 30" stroke="#667eea" stroke-width="3" marker-end="url(#arrowhead)"/>
+                </g>
+              </g>
+              
+              <!-- 3. 组织架构图 (0, 1100) -->
+              <g transform="translate(50, 1100)">
+                <text x="500" y="30" text-anchor="middle" font-size="28" font-weight="bold" fill="#667eea">三、组织架构图</text>
+                
+                <!-- 背景 -->
+                <rect x="0" y="60" width="1100" height="600" fill="white" stroke="#e0e0e0" stroke-width="2" rx="10"/>
+                
+                <!-- CEO层 -->
+                <g transform="translate(450, 100)">
+                  <rect x="0" y="0" width="200" height="80" fill="#667eea" rx="10"/>
+                  <text x="100" y="35" text-anchor="middle" font-size="18" fill="white" font-weight="bold">CEO</text>
+                  <text x="100" y="55" text-anchor="middle" font-size="12" fill="white">战略决策中心</text>
+                </g>
+                
+                <!-- VP层 -->
+                <g transform="translate(50, 250)">
+                  <!-- Social VP -->
+                  <rect x="0" y="0" width="200" height="80" fill="#f093fb" rx="10"/>
+                  <text x="100" y="30" text-anchor="middle" font-size="16" fill="white" font-weight="bold">Social增长VP</text>
+                  <text x="100" y="50" text-anchor="middle" font-size="11" fill="white">30-50人团队</text>
+                  
+                  <!-- Search VP -->
+                  <rect x="250" y="0" width="200" height="80" fill="#4facfe" rx="10"/>
+                  <text x="350" y="30" text-anchor="middle" font-size="16" fill="white" font-weight="bold">Search增长VP</text>
+                  <text x="350" y="50" text-anchor="middle" font-size="11" fill="white">20-30人团队</text>
+                  
+                  <!-- CTO -->
+                  <rect x="500" y="0" width="200" height="80" fill="#fa709a" rx="10"/>
+                  <text x="600" y="30" text-anchor="middle" font-size="16" fill="white" font-weight="bold">CTO</text>
+                  <text x="600" y="50" text-anchor="middle" font-size="11" fill="white">技术中台25-35人</text>
+                  
+                  <!-- Customer Success VP -->
+                  <rect x="750" y="0" width="200" height="80" fill="#fee140" rx="10"/>
+                  <text x="850" y="30" text-anchor="middle" font-size="16" fill="white" font-weight="bold">客户成功VP</text>
+                  <text x="850" y="50" text-anchor="middle" font-size="11" fill="white">15-20人团队</text>
+                </g>
+                
+                <!-- 连接线 -->
+                <path d="M 550 180 L 150 250" stroke="#667eea" stroke-width="2"/>
+                <path d="M 550 180 L 350 250" stroke="#667eea" stroke-width="2"/>
+                <path d="M 550 180 L 600 250" stroke="#667eea" stroke-width="2"/>
+                <path d="M 550 180 L 850 250" stroke="#667eea" stroke-width="2"/>
+                
+                <!-- 部门详情 -->
+                <g transform="translate(50, 380)">
+                  <!-- Social团队 -->
+                  <text x="100" y="20" text-anchor="middle" font-size="14" font-weight="bold" fill="#f093fb">Social增长团队</text>
+                  <rect x="0" y="30" width="200" height="180" fill="#f093fb" opacity="0.1" rx="5"/>
+                  <text x="10" y="55" font-size="12">• 内容创意组 (5人)</text>
+                  <text x="10" y="80" font-size="12">• AIGC生产组 (10人)</text>
+                  <text x="10" y="105" font-size="12">• 矩阵运营组 (10人)</text>
+                  <text x="10" y="130" font-size="12">• MCN管理组 (5人)</text>
+                  <text x="10" y="155" font-size="12">• 数据分析组 (3人)</text>
+                  
+                  <!-- Search团队 -->
+                  <text x="350" y="20" text-anchor="middle" font-size="14" font-weight="bold" fill="#4facfe">Search增长团队</text>
+                  <rect x="250" y="30" width="200" height="180" fill="#4facfe" opacity="0.1" rx="5"/>
+                  <text x="260" y="55" font-size="12">• GEO策略组 (5人)</text>
+                  <text x="260" y="80" font-size="12">• 内容优化组 (8人)</text>
+                  <text x="260" y="105" font-size="12">• 技术SEO组 (5人)</text>
+                  <text x="260" y="130" font-size="12">• 数据监控组 (3人)</text>
+                  
+                  <!-- 技术中台 -->
+                  <text x="600" y="20" text-anchor="middle" font-size="14" font-weight="bold" fill="#fa709a">技术中台</text>
+                  <rect x="500" y="30" width="200" height="180" fill="#fa709a" opacity="0.1" rx="5"/>
+                  <text x="510" y="55" font-size="12">• DAM开发组 (8人)</text>
+                  <text x="510" y="80" font-size="12">• AI研发组 (10人)</text>
+                  <text x="510" y="105" font-size="12">• 数据平台组 (5人)</text>
+                  <text x="510" y="130" font-size="12">• 基础架构组 (5人)</text>
+                  
+                  <!-- 客户成功 -->
+                  <text x="850" y="20" text-anchor="middle" font-size="14" font-weight="bold" fill="#fee140">客户成功团队</text>
+                  <rect x="750" y="30" width="200" height="180" fill="#fee140" opacity="0.1" rx="5"/>
+                  <text x="760" y="55" font-size="12">• 大客户成功组 (5人)</text>
+                  <text x="760" y="80" font-size="12">• 私域运营组 (5人)</text>
+                  <text x="760" y="105" font-size="12">• 培训支持组 (3人)</text>
+                  <text x="760" y="130" font-size="12">• 续约管理组 (3人)</text>
+                </g>
+              </g>
+              
+              <!-- 4. 价值流程图 (0, 1800) -->
+              <g transform="translate(50, 1800)">
+                <text x="500" y="30" text-anchor="middle" font-size="28" font-weight="bold" fill="#667eea">四、客户价值创造流程</text>
+                
+                <!-- 背景 -->
+                <rect x="0" y="60" width="1100" height="400" fill="white" stroke="#e0e0e0" stroke-width="2" rx="10"/>
+                
+                <!-- 价值创造环 -->
+                <g transform="translate(550, 260)">
+                  <!-- 中心 -->
+                  <circle cx="0" cy="0" r="80" fill="#667eea"/>
+                  <text x="0" y="-10" text-anchor="middle" font-size="18" fill="white" font-weight="bold">客户价值</text>
+                  <text x="0" y="10" text-anchor="middle" font-size="24" fill="white" font-weight="bold">ROI↑150%</text>
+                  
+                  <!-- 价值点 -->
+                  <g transform="rotate(0)">
+                    <circle cx="0" cy="-150" r="60" fill="#f093fb"/>
+                    <text x="0" y="-155" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Social效率</text>
+                    <text x="0" y="-140" text-anchor="middle" font-size="10" fill="white">成本↓80%</text>
+                  </g>
+                  
+                  <g transform="rotate(90)">
+                    <circle cx="0" cy="-150" r="60" fill="#4facfe"/>
+                    <text x="0" y="-155" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Search创新</text>
+                    <text x="0" y="-140" text-anchor="middle" font-size="10" fill="white">流量↑200%</text>
+                  </g>
+                  
+                  <g transform="rotate(180)">
+                    <circle cx="0" cy="-150" r="60" fill="#fa709a"/>
+                    <text x="0" y="-155" text-anchor="middle" font-size="12" fill="white" font-weight="bold">私域转化</text>
+                    <text x="0" y="-140" text-anchor="middle" font-size="10" fill="white">LTV↑40%</text>
+                  </g>
+                  
+                  <g transform="rotate(270)">
+                    <circle cx="0" cy="-150" r="60" fill="#fee140"/>
+                    <text x="0" y="-155" text-anchor="middle" font-size="12" fill="white" font-weight="bold">内容复用</text>
+                    <text x="0" y="-140" text-anchor="middle" font-size="10" fill="white">效率x10</text>
+                  </g>
+                  
+                  <!-- 连接线 -->
+                  <circle cx="0" cy="0" r="150" fill="none" stroke="#667eea" stroke-width="2" stroke-dasharray="10,5"/>
+                </g>
+              </g>
+              
+              <!-- 箭头标记定义 -->
+              <defs>
+                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                  <polygon points="0 0, 10 3.5, 0 7" fill="#667eea"/>
+                </marker>
+              </defs>
+            </svg>
+        </div>
+    </div>
+</body>
+</html>

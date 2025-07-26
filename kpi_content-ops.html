@@ -1,0 +1,1646 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eureka Content Operation Metrics V2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f0f2f5;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1440px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #6B46C1 0%, #EC4899 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 500px;
+            height: 500px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+        
+        .header h1 {
+            font-size: 36px;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header p {
+            font-size: 20px;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .metrics-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        
+        .overview-tile {
+            background: white;
+            padding: 28px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .overview-tile::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(to bottom, #6B46C1, #EC4899);
+        }
+        
+        .overview-tile:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+        }
+        
+        .overview-tile.excellent::before { background: #10B981; }
+        .overview-tile.good::before { background: #3B82F6; }
+        .overview-tile.warning::before { background: #F59E0B; }
+        .overview-tile.critical::before { background: #EF4444; }
+        
+        .tile-metric {
+            font-size: 15px;
+            color: #6B7280;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+        
+        .tile-value {
+            font-size: 42px;
+            font-weight: 800;
+            color: #1F2937;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #6B46C1, #EC4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .tile-target {
+            font-size: 14px;
+            color: #9CA3AF;
+            margin-bottom: 8px;
+        }
+        
+        .tile-trend {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .metric-card {
+            background: white;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            margin-bottom: 32px;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 28px 32px;
+            background: #F9FAFB;
+            border-bottom: 2px solid #E5E7EB;
+        }
+        
+        .card-title-group {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .card-title {
+            font-size: 28px;
+            color: #1F2937;
+            font-weight: 700;
+        }
+        
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 24px;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-excellent { background: #D1FAE5; color: #065F46; }
+        .status-good { background: #DBEAFE; color: #1E40AF; }
+        .status-warning { background: #FEF3C7; color: #92400E; }
+        .status-critical { background: #FEE2E2; color: #991B1B; }
+        
+        .score-display {
+            text-align: center;
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            min-width: 220px;
+        }
+        
+        .score-number {
+            font-size: 52px;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+        
+        .score-unit {
+            font-size: 24px;
+            color: #6B7280;
+            font-weight: 400;
+        }
+        
+        .score-target {
+            font-size: 14px;
+            color: #9CA3AF;
+            margin-top: 12px;
+        }
+        
+        .card-content {
+            padding: 32px;
+        }
+        
+        .metrics-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .metric-box {
+            background: #F9FAFB;
+            padding: 24px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #E5E7EB;
+            transition: all 0.3s ease;
+        }
+        
+        .metric-box:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+            border-color: #6B46C1;
+        }
+        
+        .metric-label {
+            font-size: 13px;
+            color: #6B7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        
+        .metric-value {
+            font-size: 32px;
+            font-weight: 800;
+            color: #1F2937;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 28px;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+        
+        .data-table th {
+            background: linear-gradient(135deg, #6B46C1, #EC4899);
+            color: white;
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .data-table td {
+            padding: 16px;
+            border-bottom: 1px solid #E5E7EB;
+            font-size: 15px;
+            color: #374151;
+        }
+        
+        .data-table tr:hover {
+            background: #F9FAFB;
+        }
+        
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .trend-positive {
+            color: #10B981;
+            font-weight: 700;
+        }
+        
+        .trend-negative {
+            color: #EF4444;
+            font-weight: 700;
+        }
+        
+        .trend-stable {
+            color: #F59E0B;
+            font-weight: 700;
+        }
+        
+        .progress-track {
+            width: 100%;
+            height: 16px;
+            background: #E5E7EB;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 24px;
+            position: relative;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            border-radius: 8px;
+            transition: width 1.5s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.3),
+                transparent
+            );
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .progress-excellent { background: linear-gradient(90deg, #10B981, #34D399); }
+        .progress-good { background: linear-gradient(90deg, #3B82F6, #60A5FA); }
+        .progress-warning { background: linear-gradient(90deg, #F59E0B, #FBBF24); }
+        .progress-critical { background: linear-gradient(90deg, #EF4444, #F87171); }
+        
+        .progress-label {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        
+        .workflow-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #F9FAFB;
+            padding: 32px;
+            border-radius: 16px;
+            margin: 24px 0;
+            flex-wrap: wrap;
+            gap: 24px;
+        }
+        
+        .workflow-step {
+            flex: 1;
+            min-width: 150px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .workflow-step:not(:last-child)::after {
+            content: '→';
+            position: absolute;
+            right: -20px;
+            top: 35%;
+            font-size: 24px;
+            color: #9CA3AF;
+        }
+        
+        .workflow-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #6B46C1, #EC4899);
+            border-radius: 50%;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(107, 70, 193, 0.3);
+        }
+        
+        .workflow-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1F2937;
+            margin-bottom: 8px;
+        }
+        
+        .workflow-metric {
+            font-size: 24px;
+            font-weight: 800;
+            color: #6B46C1;
+        }
+        
+        .chart-container {
+            background: #F9FAFB;
+            padding: 28px;
+            border-radius: 16px;
+            margin: 24px 0;
+        }
+        
+        .chart-header {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1F2937;
+            margin-bottom: 20px;
+        }
+        
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            height: 250px;
+            padding: 20px 0;
+        }
+        
+        .bar-item {
+            flex: 1;
+            text-align: center;
+            position: relative;
+            margin: 0 8px;
+        }
+        
+        .bar {
+            width: 100%;
+            background: linear-gradient(to top, #6B46C1, #EC4899);
+            border-radius: 8px 8px 0 0;
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .bar:hover {
+            transform: scaleY(1.05);
+            box-shadow: 0 -4px 12px rgba(107, 70, 193, 0.3);
+        }
+        
+        .bar-value {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: 700;
+            color: #1F2937;
+            font-size: 16px;
+        }
+        
+        .bar-label {
+            margin-top: 12px;
+            font-size: 14px;
+            color: #6B7280;
+            font-weight: 500;
+        }
+        
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+        
+        .heatmap-cell {
+            background: white;
+            border: 2px solid #E5E7EB;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .heatmap-cell.high {
+            background: #D1FAE5;
+            border-color: #10B981;
+        }
+        
+        .heatmap-cell.medium {
+            background: #FEF3C7;
+            border-color: #F59E0B;
+        }
+        
+        .heatmap-cell.low {
+            background: #FEE2E2;
+            border-color: #EF4444;
+        }
+        
+        .heatmap-percentage {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        
+        .heatmap-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .insights-panel {
+            background: linear-gradient(135deg, #EDE9FE, #FCE7F3);
+            border-left: 5px solid #6B46C1;
+            padding: 24px;
+            margin: 28px 0;
+            border-radius: 12px;
+        }
+        
+        .insights-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #5B21B6;
+            margin-bottom: 16px;
+        }
+        
+        .insights-list {
+            list-style: none;
+            padding-left: 24px;
+        }
+        
+        .insights-list li {
+            position: relative;
+            margin-bottom: 12px;
+            color: #5B21B6;
+            font-weight: 500;
+        }
+        
+        .insights-list li:before {
+            content: '💡';
+            position: absolute;
+            left: -24px;
+        }
+        
+        .alert-banner {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #FEE2E2;
+            color: #991B1B;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-left: 12px;
+            animation: blink 2s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        .timeline-visual {
+            position: relative;
+            padding: 32px 0;
+            margin: 24px 0;
+        }
+        
+        .timeline-line {
+            height: 6px;
+            background: #E5E7EB;
+            border-radius: 3px;
+            position: relative;
+        }
+        
+        .timeline-progress {
+            position: absolute;
+            height: 100%;
+            background: linear-gradient(90deg, #6B46C1, #EC4899);
+            border-radius: 3px;
+            transition: width 1.5s ease-out;
+        }
+        
+        .timeline-points {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 24px;
+        }
+        
+        .timeline-point {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .point-time {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1F2937;
+            margin-bottom: 4px;
+        }
+        
+        .point-label {
+            font-size: 14px;
+            color: #6B7280;
+        }
+        
+        .distribution-chart {
+            display: flex;
+            height: 320px;
+            align-items: flex-end;
+            justify-content: space-around;
+            background: white;
+            padding: 32px;
+            border-radius: 16px;
+            margin: 24px 0;
+        }
+        
+        .distribution-item {
+            flex: 1;
+            text-align: center;
+            margin: 0 12px;
+        }
+        
+        .distribution-bar {
+            width: 80%;
+            margin: 0 auto 16px;
+            background: linear-gradient(to top, #6B46C1, #EC4899);
+            border-radius: 12px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .distribution-bar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px rgba(107, 70, 193, 0.3);
+        }
+        
+        .distribution-value {
+            position: absolute;
+            top: -32px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 20px;
+            font-weight: 700;
+            color: #1F2937;
+        }
+        
+        .distribution-icon {
+            font-size: 48px;
+            margin-bottom: 8px;
+        }
+        
+        .distribution-label {
+            font-size: 16px;
+            font-weight: 600;
+            color: #374151;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Eureka扫地机器人 - 内容运营指标深度分析</h1>
+            <p>AI驱动的内容生产与优化全景监控 | 2025年1月27日</p>
+        </div>
+        
+        <!-- 核心指标概览 -->
+        <div class="metrics-overview">
+            <div class="overview-tile excellent">
+                <div class="tile-metric">Content Production Rate</div>
+                <div class="tile-value">168条/周</div>
+                <div class="tile-target">目标值: ≥150条/周</div>
+                <div class="tile-trend trend-positive">↑ +18.5% vs 上周</div>
+            </div>
+            
+            <div class="overview-tile good">
+                <div class="tile-metric">Schema Coverage</div>
+                <div class="tile-value">91.2%</div>
+                <div class="tile-target">目标值: ≥90%</div>
+                <div class="tile-trend trend-positive">↑ +2.8% vs 上月</div>
+            </div>
+            
+            <div class="overview-tile critical">
+                <div class="tile-metric">FAQ Completion Rate</div>
+                <div class="tile-value">68.5%</div>
+                <div class="tile-target">目标值: ≥85%</div>
+                <div class="tile-trend trend-positive">↑ +3.2% vs 上月</div>
+            </div>
+            
+            <div class="overview-tile excellent">
+                <div class="tile-metric">Video Segment Efficiency</div>
+                <div class="tile-value">5.6个/视频</div>
+                <div class="tile-target">目标值: ≥5个/视频</div>
+                <div class="tile-trend trend-positive">↑ +12% vs 上月</div>
+            </div>
+            
+            <div class="overview-tile excellent">
+                <div class="tile-metric">Content Approval Time</div>
+                <div class="tile-value">1.8小时</div>
+                <div class="tile-target">目标值: ≤3小时</div>
+                <div class="tile-trend trend-positive">↓ -0.7小时 vs 上周</div>
+            </div>
+            
+            <div class="overview-tile good">
+                <div class="tile-metric">Multi-modal Asset Ratio</div>
+                <div class="tile-value">76.8%</div>
+                <div class="tile-target">目标值: ≥75%</div>
+                <div class="tile-trend trend-positive">↑ +6.3% vs 上月</div>
+            </div>
+        </div>
+        
+        <!-- Content Production Rate -->
+        <div class="metric-card">
+            <div class="card-header">
+                <div class="card-title-group">
+                    <h2 class="card-title">Content Production Rate</h2>
+                    <span class="status-badge status-excellent">优秀</span>
+                </div>
+                <div class="score-display">
+                    <div class="score-number" style="color: #10B981;">168<span class="score-unit">条/周</span></div>
+                    <div class="score-target">目标: ≥150条/周</div>
+                    <div class="trend-positive" style="font-size: 18px; margin-top: 8px;">↑ +18.5%</div>
+                </div>
+            </div>
+            
+            <div class="card-content">
+                <div class="metrics-row">
+                    <div class="metric-box">
+                        <div class="metric-label">本周总产出</div>
+                        <div class="metric-value">168</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">日均产量</div>
+                        <div class="metric-value">24</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">AI生成占比</div>
+                        <div class="metric-value">71.4%</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">原创内容</div>
+                        <div class="metric-value">48条</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">审核通过率</div>
+                        <div class="metric-value">94.6%</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">人均产出</div>
+                        <div class="metric-value">21条</div>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-header">本周内容产出分布</div>
+                    <div class="bar-chart">
+                        <div class="bar-item">
+                            <div class="bar" style="height: 80%">
+                                <span class="bar-value">19</span>
+                            </div>
+                            <div class="bar-label">周一</div>
+                        </div>
+                        <div class="bar-item">
+                            <div class="bar" style="height: 95%">
+                                <span class="bar-value">23</span>
+                            </div>
+                            <div class="bar-label">周二</div>
+                        </div>
+                        <div class="bar-item">
+                            <div class="bar" style="height: 100%">
+                                <span class="bar-value">26</span>
+                            </div>
+                            <div class="bar-label">周三</div>
+                        </div>
+                        <div class="bar-item">
+                            <div class="bar" style="height: 92%">
+                                <span class="bar-value">24</span>
+                            </div>
+                            <div class="bar-label">周四</div>
+                        </div>
+                        <div class="bar-item">
+                            <div class="bar" style="height: 85%">
+                                <span class="bar-value">22</span>
+                            </div>
+                            <div class="bar-label">周五</div>
+                        </div>
+                        <div class="bar-item">
+                            <div class="bar" style="height: 70%">
+                                <span class="bar-value">18</span>
+                            </div>
+                            <div class="bar-label">周六</div>
+                        </div>
+                        <div class="bar-item">
+                            <div class="bar" style="height: 65%">
+                                <span class="bar-value">16</span>
+                            </div>
+                            <div class="bar-label">周日</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>内容分类</th>
+                            <th>周目标</th>
+                            <th>实际产出</th>
+                            <th>达成率</th>
+                            <th>AI辅助</th>
+                            <th>质量得分</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>产品特性</td>
+                            <td>35</td>
+                            <td>42</td>
+                            <td class="trend-positive">120.0%</td>
+                            <td>85.7%</td>
+                            <td>9.3/10</td>
+                        </tr>
+                        <tr>
+                            <td>操作指南</td>
+                            <td>45</td>
+                            <td>48</td>
+                            <td class="trend-positive">106.7%</td>
+                            <td>72.9%</td>
+                            <td>9.1/10</td>
+                        </tr>
+                        <tr>
+                            <td>问题解答</td>
+                            <td>30</td>
+                            <td>35</td>
+                            <td class="trend-positive">116.7%</td>
+                            <td>68.6%</td>
+                            <td>8.8/10</td>
+                        </tr>
+                        <tr>
+                            <td>案例分享</td>
+                            <td>20</td>
+                            <td>24</td>
+                            <td class="trend-positive">120.0%</td>
+                            <td>45.8%</td>
+                            <td>9.5/10</td>
+                        </tr>
+                        <tr>
+                            <td>技术说明</td>
+                            <td>15</td>
+                            <td>13</td>
+                            <td class="trend-negative">86.7%</td>
+                            <td>61.5%</td>
+                            <td>9.2/10</td>
+                        </tr>
+                        <tr>
+                            <td>营销内容</td>
+                            <td>5</td>
+                            <td>6</td>
+                            <td class="trend-positive">120.0%</td>
+                            <td>83.3%</td>
+                            <td>8.9/10</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="progress-track">
+                    <div class="progress-bar progress-excellent" style="width: 112%">
+                        <span class="progress-label">112% 目标达成</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Schema Coverage -->
+        <div class="metric-card">
+            <div class="card-header">
+                <div class="card-title-group">
+                    <h2 class="card-title">Schema Coverage</h2>
+                    <span class="status-badge status-good">良好</span>
+                </div>
+                <div class="score-display">
+                    <div class="score-number" style="color: #3B82F6;">91.2<span class="score-unit">%</span></div>
+                    <div class="score-target">目标: ≥90%</div>
+                    <div class="trend-positive" style="font-size: 18px; margin-top: 8px;">↑ +2.8%</div>
+                </div>
+            </div>
+            
+            <div class="card-content">
+                <div class="metrics-row">
+                    <div class="metric-box">
+                        <div class="metric-label">总页面数</div>
+                        <div class="metric-value">1,024</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">已部署Schema</div>
+                        <div class="metric-value">934</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">Schema种类</div>
+                        <div class="metric-value">15</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">通过验证</div>
+                        <div class="metric-value">98.2%</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">富结果展示</div>
+                        <div class="metric-value">567</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">待修复错误</div>
+                        <div class="metric-value">17</div>
+                    </div>
+                </div>
+                
+                <div class="heatmap-grid">
+                    <div class="heatmap-cell high">
+                        <div class="heatmap-percentage">100%</div>
+                        <div class="heatmap-label">Product Schema</div>
+                    </div>
+                    <div class="heatmap-cell high">
+                        <div class="heatmap-percentage">98.5%</div>
+                        <div class="heatmap-label">Review Schema</div>
+                    </div>
+                    <div class="heatmap-cell high">
+                        <div class="heatmap-percentage">96.2%</div>
+                        <div class="heatmap-label">FAQ Schema</div>
+                    </div>
+                    <div class="heatmap-cell high">
+                        <div class="heatmap-percentage">94.8%</div>
+                        <div class="heatmap-label">Video Schema</div>
+                    </div>
+                    <div class="heatmap-cell medium">
+                        <div class="heatmap-percentage">87.3%</div>
+                        <div class="heatmap-label">HowTo Schema</div>
+                    </div>
+                    <div class="heatmap-cell low">
+                        <div class="heatmap-percentage">62.5%</div>
+                        <div class="heatmap-label">Article Schema</div>
+                    </div>
+                </div>
+                
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>页面类型</th>
+                            <th>总数</th>
+                            <th>已实施</th>
+                            <th>覆盖率</th>
+                            <th>搜索表现</th>
+                            <th>行动计划</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>产品详情页</td>
+                            <td>186</td>
+                            <td>186</td>
+                            <td class="trend-positive">100%</td>
+                            <td>优秀</td>
+                            <td>维护更新</td>
+                        </tr>
+                        <tr>
+                            <td>评价页面</td>
+                            <td>134</td>
+                            <td>132</td>
+                            <td class="trend-positive">98.5%</td>
+                            <td>优秀</td>
+                            <td>补全剩余</td>
+                        </tr>
+                        <tr>
+                            <td>常见问题</td>
+                            <td>156</td>
+                            <td>150</td>
+                            <td class="trend-positive">96.2%</td>
+                            <td>良好</td>
+                            <td>完善内容</td>
+                        </tr>
+                        <tr>
+                            <td>视频内容</td>
+                            <td>212</td>
+                            <td>201</td>
+                            <td class="trend-positive">94.8%</td>
+                            <td>良好</td>
+                            <td>优化标记</td>
+                        </tr>
+                        <tr>
+                            <td>教程指南</td>
+                            <td>189</td>
+                            <td>165</td>
+                            <td class="trend-stable">87.3%</td>
+                            <td>中等</td>
+                            <td>加速部署</td>
+                        </tr>
+                        <tr>
+                            <td>博客文章</td>
+                            <td>147</td>
+                            <td>92</td>
+                            <td class="trend-negative">62.5%</td>
+                            <td>较差</td>
+                            <td style="color: #EF4444;">紧急改进</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="progress-track">
+                    <div class="progress-bar progress-good" style="width: 91.2%">
+                        <span class="progress-label">91.2% 覆盖率</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- FAQ Completion Rate -->
+        <div class="metric-card">
+            <div class="card-header">
+                <div class="card-title-group">
+                    <h2 class="card-title">FAQ Completion Rate</h2>
+                    <span class="status-badge status-critical">需改进</span>
+                    <span class="alert-banner">低于目标</span>
+                </div>
+                <div class="score-display">
+                    <div class="score-number" style="color: #EF4444;">68.5<span class="score-unit">%</span></div>
+                    <div class="score-target">目标: ≥85%</div>
+                    <div class="trend-positive" style="font-size: 18px; margin-top: 8px;">↑ +3.2%</div>
+                </div>
+            </div>
+            
+            <div class="card-content">
+                <div class="metrics-row">
+                    <div class="metric-box">
+                        <div class="metric-label">问题总数</div>
+                        <div class="metric-value">523</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">已完成</div>
+                        <div class="metric-value">358</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">待处理</div>
+                        <div class="metric-value">165</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">平均长度</div>
+                        <div class="metric-value">215字</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">含图解答</div>
+                        <div class="metric-value">289</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">视频解答</div>
+                        <div class="metric-value">124</div>
+                    </div>
+                </div>
+                
+                <div class="workflow-container">
+                    <div class="workflow-step">
+                        <div class="workflow-icon">❓</div>
+                        <div class="workflow-title">收集问题</div>
+                        <div class="workflow-metric">523个</div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="workflow-icon">📝</div>
+                        <div class="workflow-title">编写答案</div>
+                        <div class="workflow-metric">358个</div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="workflow-icon">✅</div>
+                        <div class="workflow-title">审核发布</div>
+                        <div class="workflow-metric">342个</div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="workflow-icon">📊</div>
+                        <div class="workflow-title">效果评估</div>
+                        <div class="workflow-metric">4.2/5分</div>
+                    </div>
+                </div>
+                
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>问题类别</th>
+                            <th>问题数</th>
+                            <th>已回答</th>
+                            <th>完成率</th>
+                            <th>用户满意度</th>
+                            <th>优先级</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>功能使用</td>
+                            <td>145</td>
+                            <td>118</td>
+                            <td class="trend-positive">81.4%</td>
+                            <td>4.5/5</td>
+                            <td>中</td>
+                        </tr>
+                        <tr>
+                            <td>购买指南</td>
+                            <td>98</td>
+                            <td>76</td>
+                            <td class="trend-stable">77.6%</td>
+                            <td>4.3/5</td>
+                            <td>高</td>
+                        </tr>
+                        <tr>
+                            <td>故障处理</td>
+                            <td>112</td>
+                            <td>68</td>
+                            <td class="trend-negative">60.7%</td>
+                            <td>4.1/5</td>
+                            <td style="color: #EF4444;">紧急</td>
+                        </tr>
+                        <tr>
+                            <td>维护保养</td>
+                            <td>87</td>
+                            <td>52</td>
+                            <td class="trend-negative">59.8%</td>
+                            <td>3.9/5</td>
+                            <td style="color: #EF4444;">紧急</td>
+                        </tr>
+                        <tr>
+                            <td>技术参数</td>
+                            <td>81</td>
+                            <td>44</td>
+                            <td class="trend-negative">54.3%</td>
+                            <td>-</td>
+                            <td style="color: #EF4444;">紧急</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="insights-panel">
+                    <div class="insights-title">紧急改进行动</div>
+                    <ul class="insights-list">
+                        <li>立即组织FAQ专项补充，重点处理故障处理类问题</li>
+                        <li>引入AI问答生成工具，加速内容生产</li>
+                        <li>建立用户问题实时收集机制</li>
+                        <li>设置每周FAQ更新目标，确保持续改进</li>
+                    </ul>
+                </div>
+                
+                <div class="progress-track">
+                    <div class="progress-bar progress-critical" style="width: 68.5%">
+                        <span class="progress-label">68.5% 完成率</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Video Segment Efficiency -->
+        <div class="metric-card">
+            <div class="card-header">
+                <div class="card-title-group">
+                    <h2 class="card-title">Video Segment Efficiency</h2>
+                    <span class="status-badge status-excellent">优秀</span>
+                </div>
+                <div class="score-display">
+                    <div class="score-number" style="color: #10B981;">5.6<span class="score-unit">个/视频</span></div>
+                    <div class="score-target">目标: ≥5个/视频</div>
+                    <div class="trend-positive" style="font-size: 18px; margin-top: 8px;">↑ +12%</div>
+                </div>
+            </div>
+            
+            <div class="card-content">
+                <div class="metrics-row">
+                    <div class="metric-box">
+                        <div class="metric-label">视频总数</div>
+                        <div class="metric-value">189</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">片段总数</div>
+                        <div class="metric-value">1,058</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">平均时长</div>
+                        <div class="metric-value">42秒</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">AI识别率</div>
+                        <div class="metric-value">89.3%</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">标签准确率</div>
+                        <div class="metric-value">94.7%</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">高价值片段</div>
+                        <div class="metric-value">423</div>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-header">视频类型片段效率分析</div>
+                    <div class="bar-chart">
+                        <div class="bar-item">
+                            <div class="bar" style="height: 100%">
+                                <span class="bar-value">7.2</span>
+                            </div>
+                            <div class="bar-label">功能演示</div>
+                        </div>
+                        <div class="bar-item">
+                            <div class="bar" style="height: 90%">
+                                <span class="bar-value">6.5</span>
+                            </div>
+                            <div class="bar-label">操作教程</div>
+                        </div>
+                        <div class="bar-item">
+                            <div class="bar" style="height: 75%">
+                                <span class="bar-value">5.4</span>
+                            </div>
+                            <div class="bar-label">产品介绍</div>
+                        </div>
+                        <div class="bar-item">
+                            <div class="bar" style="height: 65%">
+                                <span class="bar-value">4.6</span>
+                            </div>
+                            <div class="bar-label">开箱测评</div>
+                        </div>
+                        <div class="bar-item">
+                            <div class="bar" style="height: 55%">
+                                <span class="bar-value">3.9</span>
+                            </div>
+                            <div class="bar-label">用户分享</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>视频类别</th>
+                            <th>数量</th>
+                            <th>总片段</th>
+                            <th>平均片段</th>
+                            <th>AI引用次数</th>
+                            <th>转化效果</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>功能演示</td>
+                            <td>52</td>
+                            <td>374</td>
+                            <td>7.2</td>
+                            <td>12,456</td>
+                            <td class="trend-positive">优秀</td>
+                        </tr>
+                        <tr>
+                            <td>操作教程</td>
+                            <td>45</td>
+                            <td>293</td>
+                            <td>6.5</td>
+                            <td>9,823</td>
+                            <td class="trend-positive">优秀</td>
+                        </tr>
+                        <tr>
+                            <td>产品介绍</td>
+                            <td>38</td>
+                            <td>205</td>
+                            <td>5.4</td>
+                            <td>7,234</td>
+                            <td class="trend-positive">良好</td>
+                        </tr>
+                        <tr>
+                            <td>开箱测评</td>
+                            <td>32</td>
+                            <td>147</td>
+                            <td>4.6</td>
+                            <td>4,567</td>
+                            <td class="trend-stable">中等</td>
+                        </tr>
+                        <tr>
+                            <td>用户分享</td>
+                            <td>22</td>
+                            <td>86</td>
+                            <td>3.9</td>
+                            <td>2,134</td>
+                            <td class="trend-negative">待改进</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="progress-track">
+                    <div class="progress-bar progress-excellent" style="width: 95%">
+                        <span class="progress-label">112% 目标达成</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Content Approval Time -->
+        <div class="metric-card">
+            <div class="card-header">
+                <div class="card-title-group">
+                    <h2 class="card-title">Content Approval Time</h2>
+                    <span class="status-badge status-excellent">优秀</span>
+                </div>
+                <div class="score-display">
+                    <div class="score-number" style="color: #10B981;">1.8<span class="score-unit">小时</span></div>
+                    <div class="score-target">目标: ≤3小时</div>
+                    <div class="trend-positive" style="font-size: 18px; margin-top: 8px;">↓ -0.7小时</div>
+                </div>
+            </div>
+            
+            <div class="card-content">
+                <div class="metrics-row">
+                    <div class="metric-box">
+                        <div class="metric-label">平均审批时长</div>
+                        <div class="metric-value">1.8小时</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">最快审批</div>
+                        <div class="metric-value">12分钟</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">最慢审批</div>
+                        <div class="metric-value">6.5小时</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">自动审批率</div>
+                        <div class="metric-value">42.3%</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">一次通过</div>
+                        <div class="metric-value">83.6%</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">审批团队</div>
+                        <div class="metric-value">5人</div>
+                    </div>
+                </div>
+                
+                <div class="timeline-visual">
+                    <div class="timeline-line">
+                        <div class="timeline-progress" style="width: 60%"></div>
+                    </div>
+                    <div class="timeline-points">
+                        <div class="timeline-point">
+                            <div class="point-time">0分钟</div>
+                            <div class="point-label">提交内容</div>
+                        </div>
+                        <div class="timeline-point">
+                            <div class="point-time">25分钟</div>
+                            <div class="point-label">AI初审</div>
+                        </div>
+                        <div class="timeline-point">
+                            <div class="point-time">55分钟</div>
+                            <div class="point-label">人工复审</div>
+                        </div>
+                        <div class="timeline-point">
+                            <div class="point-time">1.8小时</div>
+                            <div class="point-label">批准发布</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>内容类型</th>
+                            <th>提交量</th>
+                            <th>平均审批</th>
+                            <th>自动通过</th>
+                            <th>退回率</th>
+                            <th>优化建议</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>营销文案</td>
+                            <td>267</td>
+                            <td>0.8小时</td>
+                            <td>68.5%</td>
+                            <td>8.2%</td>
+                            <td>扩大自动审批</td>
+                        </tr>
+                        <tr>
+                            <td>产品描述</td>
+                            <td>189</td>
+                            <td>1.2小时</td>
+                            <td>52.4%</td>
+                            <td>12.7%</td>
+                            <td>优化模板</td>
+                        </tr>
+                        <tr>
+                            <td>技术文档</td>
+                            <td>134</td>
+                            <td>3.5小时</td>
+                            <td>15.7%</td>
+                            <td>23.1%</td>
+                            <td style="color: #F59E0B;">简化流程</td>
+                        </tr>
+                        <tr>
+                            <td>视频脚本</td>
+                            <td>98</td>
+                            <td>2.1小时</td>
+                            <td>32.7%</td>
+                            <td>18.4%</td>
+                            <td>增加样例</td>
+                        </tr>
+                        <tr>
+                            <td>社交内容</td>
+                            <td>156</td>
+                            <td>0.5小时</td>
+                            <td>78.2%</td>
+                            <td>5.1%</td>
+                            <td>保持现状</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="progress-track">
+                    <div class="progress-bar progress-excellent" style="width: 60%">
+                        <span class="progress-label">快于目标40%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Multi-modal Asset Ratio -->
+        <div class="metric-card">
+            <div class="card-header">
+                <div class="card-title-group">
+                    <h2 class="card-title">Multi-modal Asset Ratio</h2>
+                    <span class="status-badge status-good">良好</span>
+                </div>
+                <div class="score-display">
+                    <div class="score-number" style="color: #3B82F6;">76.8<span class="score-unit">%</span></div>
+                    <div class="score-target">目标: ≥75%</div>
+                    <div class="trend-positive" style="font-size: 18px; margin-top: 8px;">↑ +6.3%</div>
+                </div>
+            </div>
+            
+            <div class="card-content">
+                <div class="metrics-row">
+                    <div class="metric-box">
+                        <div class="metric-label">总资产数</div>
+                        <div class="metric-value">4,236</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">多模态资产</div>
+                        <div class="metric-value">3,253</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">纯文本</div>
+                        <div class="metric-value">983</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">平均模态数</div>
+                        <div class="metric-value">2.8</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">交互式内容</div>
+                        <div class="metric-value">456</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">3D/AR内容</div>
+                        <div class="metric-value">89</div>
+                    </div>
+                </div>
+                
+                <div class="distribution-chart">
+                    <div class="distribution-item">
+                        <div class="distribution-bar" style="height: 23.2%">
+                            <span class="distribution-value">23.2%</span>
+                        </div>
+                        <div class="distribution-icon">📄</div>
+                        <div class="distribution-label">纯文本</div>
+                    </div>
+                    <div class="distribution-item">
+                        <div class="distribution-bar" style="height: 38.5%">
+                            <span class="distribution-value">38.5%</span>
+                        </div>
+                        <div class="distribution-icon">🖼️</div>
+                        <div class="distribution-label">图文混合</div>
+                    </div>
+                    <div class="distribution-item">
+                        <div class="distribution-bar" style="height: 22.7%">
+                            <span class="distribution-value">22.7%</span>
+                        </div>
+                        <div class="distribution-icon">🎬</div>
+                        <div class="distribution-label">视频内容</div>
+                    </div>
+                    <div class="distribution-item">
+                        <div class="distribution-bar" style="height: 10.8%">
+                            <span class="distribution-value">10.8%</span>
+                        </div>
+                        <div class="distribution-icon">🎯</div>
+                        <div class="distribution-label">交互内容</div>
+                    </div>
+                    <div class="distribution-item">
+                        <div class="distribution-bar" style="height: 4.8%">
+                            <span class="distribution-value">4.8%</span>
+                        </div>
+                        <div class="distribution-icon">🔮</div>
+                        <div class="distribution-label">3D/AR</div>
+                    </div>
+                </div>
+                
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>使用场景</th>
+                            <th>总内容</th>
+                            <th>多模态</th>
+                            <th>占比</th>
+                            <th>用户互动率</th>
+                            <th>优化方向</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>产品展示</td>
+                            <td>678</td>
+                            <td>656</td>
+                            <td class="trend-positive">96.8%</td>
+                            <td>82.3%</td>
+                            <td>增加AR体验</td>
+                        </tr>
+                        <tr>
+                            <td>教学内容</td>
+                            <td>892</td>
+                            <td>734</td>
+                            <td class="trend-positive">82.3%</td>
+                            <td>75.6%</td>
+                            <td>强化互动性</td>
+                        </tr>
+                        <tr>
+                            <td>支持文档</td>
+                            <td>1,234</td>
+                            <td>876</td>
+                            <td class="trend-stable">71.0%</td>
+                            <td>62.4%</td>
+                            <td>增加视频</td>
+                        </tr>
+                        <tr>
+                            <td>营销内容</td>
+                            <td>567</td>
+                            <td>512</td>
+                            <td class="trend-positive">90.3%</td>
+                            <td>88.9%</td>
+                            <td>保持质量</td>
+                        </tr>
+                        <tr>
+                            <td>技术资料</td>
+                            <td>865</td>
+                            <td>475</td>
+                            <td class="trend-negative">54.9%</td>
+                            <td>45.2%</td>
+                            <td style="color: #F59E0B;">重点改进</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="insights-panel">
+                    <div class="insights-title">多模态优化策略</div>
+                    <ul class="insights-list">
+                        <li>技术资料增加交互式图表和动画说明</li>
+                        <li>探索AR/VR在产品体验中的应用</li>
+                        <li>建立多模态内容创作工作流程</li>
+                        <li>提升用户生成内容的多模态化程度</li>
+                    </ul>
+                </div>
+                
+                <div class="progress-track">
+                    <div class="progress-bar progress-good" style="width: 76.8%">
+                        <span class="progress-label">102% 目标达成</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 页面加载动画效果
+        window.addEventListener('load', function() {
+            // 进度条填充动画
+            const progressBars = document.querySelectorAll('.progress-bar');
+            progressBars.forEach(bar => {
+                const width = bar.style.width;
+                bar.style.width = '0';
+                setTimeout(() => {
+                    bar.style.width = width;
+                }, 200);
+            });
+            
+            // 柱状图生长动画
+            const bars = document.querySelectorAll('.bar, .distribution-bar');
+            bars.forEach((bar, index) => {
+                const height = bar.style.height;
+                bar.style.height = '0';
+                setTimeout(() => {
+                    bar.style.height = height;
+                    bar.style.transition = 'height 0.8s ease-out';
+                }, index * 80);
+            });
+            
+            // 数值计数动画
+            const animateValue = (element, start, end, duration) => {
+                const range = end - start;
+                const increment = range / (duration / 16);
+                let current = start;
+                
+                const timer = setInterval(() => {
+                    current += increment;
+                    if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+                        element.textContent = end;
+                        clearInterval(timer);
+                    } else {
+                        element.textContent = current.toFixed(1);
+                    }
+                }, 16);
+            };
+            
+            // 应用数值动画
+            const values = document.querySelectorAll('.tile-value, .score-number');
+            values.forEach(element => {
+                const text = element.textContent;
+                const number = parseFloat(text);
+                if (!isNaN(number)) {
+                    animateValue(element, 0, number, 1500);
+                }
+            });
+        });
+        
+        // 鼠标悬停交互效果
+        const metricBoxes = document.querySelectorAll('.metric-box');
+        metricBoxes.forEach(box => {
+            box.addEventListener('mouseenter', function() {
+                this.style.background = 'linear-gradient(135deg, #EDE9FE, #FCE7F3)';
+            });
+            
+            box.addEventListener('mouseleave', function() {
+                this.style.background = '';
+            });
+        });
+        
+        // 实时数据更新模拟
+        setInterval(() => {
+            const randomTiles = document.querySelectorAll('.overview-tile');
+            const randomIndex = Math.floor(Math.random() * randomTiles.length);
+            const tile = randomTiles[randomIndex];
+            
+            tile.style.transform = 'scale(1.05) rotate(1deg)';
+            setTimeout(() => {
+                tile.style.transform = '';
+            }, 600);
+        }, 3000);
+    </script>
+</body>
+</html>
